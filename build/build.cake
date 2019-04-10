@@ -234,9 +234,9 @@ Task("InheritDoc")
     NuGetInstall(new []{"InheritDoc"}, installSettings);
 
     var args = new ProcessArgumentBuilder()
-                // Only process xml comments from the Lottie-Windows project. No other project
+                // Only process xml comments from the SceneLoader project. No other project
                 // requires documentation.
-                .AppendSwitchQuoted("-b", $"{baseDir}/Lottie-Windows")
+                .AppendSwitchQuoted("-b", $"{baseDir}/SceneLoader")
                 // Overwrite the xml files.
                 .AppendSwitch("-o", "")
                 // Exclude these types.

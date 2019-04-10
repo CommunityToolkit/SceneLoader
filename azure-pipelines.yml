@@ -46,8 +46,8 @@ steps:
 # - script: nbgv cloud
 #   displayName: Set Version
 
-# Install Windows SDK 18357 (minimum compatible sdk)
-- powershell: .\build\Install-WindowsSdkISO.ps1 18357
+# Install Windows SDK 18362 (minimum compatible sdk)
+- powershell: .\build\Install-WindowsSdkISO.ps1 18362
   displayName: Insider SDK
 
 # Run cake build

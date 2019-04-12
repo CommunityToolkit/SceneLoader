@@ -137,7 +137,7 @@ if(!$PSScriptRoot){
 
 Write-Host -NoNewline "Locating referenced Windows SDK versions..."
 
-Get-ChildItem *.csproj -Recurse | ForEach-Object { get-sdkversion $_}
+Get-ChildItem *.vcxproj -Recurse | ForEach-Object { get-sdkversion $_}
 Get-ChildItem *.targets -Recurse | ForEach-Object { get-sdkversion $_ }
 Get-ChildItem *.props -Recurse | ForEach-Object { get-sdkversion $_ }
 

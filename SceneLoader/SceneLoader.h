@@ -1,12 +1,12 @@
 ﻿#pragma once
 
-#include "GLTFLoaderComponent.GLTFLoader.g.h"
+#include "Component.SceneLoader.g.h"
 
-namespace winrt::GLTFLoaderComponent::implementation
+namespace winrt::SceneLoaderComponent::implementation
 {
-    struct GLTFLoader : GLTFLoaderT<GLTFLoader>
+    struct SceneLoader : SceneLoaderT<SceneLoader>
     {
-        GLTFLoader() = default;
+		SceneLoader() = default;
 
         winrt::Windows::UI::Composition::Scenes::SceneNode Load(winrt::Windows::Storage::Streams::IBuffer buffer, winrt::Windows::UI::Composition::Compositor compositor);
 
@@ -24,9 +24,9 @@ namespace winrt::GLTFLoaderComponent::implementation
     };
 }
 
-namespace winrt::GLTFLoaderComponent::factory_implementation
+namespace winrt::SceneLoaderComponent::factory_implementation
 {
-    struct GLTFLoader : GLTFLoaderT<GLTFLoader, implementation::GLTFLoader>
+    struct SceneLoader : SceneLoaderT<SceneLoader, implementation::SceneLoader>
     {
     };
 }

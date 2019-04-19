@@ -1,7 +1,7 @@
 #include "pch.h"
 
 #include "UtilForIntermingledNamespaces.h"
-#include "GLTFResourceSet.h"
+#include "SceneResourceSet.h"
 
 using namespace std;
 using namespace Microsoft::glTF;
@@ -33,7 +33,7 @@ namespace SceneLoader
     }
 
 
-    GLTFResourceSet::GLTFResourceSet(winrt::Windows::UI::Composition::Compositor compositor) :
+	SceneResourceSet::SceneResourceSet(winrt::Windows::UI::Composition::Compositor compositor) :
         m_compositor(compositor),
         m_sceneMaterialMap(single_threaded_map<hstring, SceneMetallicRoughnessMaterial>()),
         m_sceneSurfaceMaterialInputMap(single_threaded_map<hstring, SceneSurfaceMaterialInput>()),
@@ -44,7 +44,7 @@ namespace SceneLoader
 
 
     SceneMetallicRoughnessMaterial
-    GLTFResourceSet::EnsureMaterialById(const std::string id)
+    SceneResourceSet::EnsureMaterialById(const std::string id)
     {
         // Should we trust that the GLTF SDK is traversing correctly the DOM?
         if (!m_sceneMaterialMap.HasKey(GetHSTRINGFromStdString(id)))
@@ -60,7 +60,7 @@ namespace SceneLoader
 
 
     CompositionMipmapSurface
-    GLTFResourceSet::EnsureMipMapSurfaceId(
+    SceneResourceSet::EnsureMipMapSurfaceId(
             const std::string id,
             winrt::Windows::Graphics::SizeInt32 sizePixels,
             winrt::Windows::Graphics::DirectX::DirectXPixelFormat pixelFormat,
@@ -85,13 +85,12 @@ namespace SceneLoader
 
 
     CompositionMipmapSurface
-    GLTFResourceSet::LookupMipMapSurfaceId(const std::string id)
+    SceneResourceSet::LookupMipMapSurfaceId(const std::string id)
     {
         return m_sceneMipMapSurfaceMap.Lookup(GetHSTRINGFromStdString(id));
     }
 
-    void
-        GLTFResourceSet::StoreGLTFSamplerById(const std::string id, Microsoft::glTF::Sampler sampler)
+    void SceneResourceSet::StoreGLTFSamplerById(const std::string id, Microsoft::glTF::Sampler sampler)
     {
         // Make sure we haven't stored this before
         assert(m_gltfSamplerMap.find(GetHSTRINGFromStdString(id)) == m_gltfSamplerMap.end());
@@ -99,8 +98,7 @@ namespace SceneLoader
         m_gltfSamplerMap.insert(std::map<winrt::hstring, Microsoft::glTF::Sampler>::value_type(GetHSTRINGFromStdString(id), sampler));
     }
 
-    bool
-        GLTFResourceSet::GetGLTFSamplerById(const std::string id, Microsoft::glTF::Sampler* pSampler)
+    bool SceneResourceSet::GetGLTFSamplerById(const std::string id, Microsoft::glTF::Sampler* pSampler)
     {
         if (m_gltfSamplerMap.find(GetHSTRINGFromStdString(id)) == m_gltfSamplerMap.end())
         {
@@ -116,8 +114,7 @@ namespace SceneLoader
     }
 
 
-    void
-    GLTFResourceSet::StoreGLTFMaterialById(const std::string id, Microsoft::glTF::Material material)
+    void SceneResourceSet::StoreGLTFMaterialById(const std::string id, Microsoft::glTF::Material material)
     {
         // Make sure we haven't stored this before
         assert(m_gltfMaterialMap.find(GetHSTRINGFromStdString(id)) == m_gltfMaterialMap.end());
@@ -126,8 +123,7 @@ namespace SceneLoader
     }
 
 
-    bool
-    GLTFResourceSet::GetGLTFMaterialById(const std::string id, Microsoft::glTF::Material* pMaterial)
+    bool SceneResourceSet::GetGLTFMaterialById(const std::string id, Microsoft::glTF::Material* pMaterial)
     {
         if (m_gltfMaterialMap.find(GetHSTRINGFromStdString(id)) == m_gltfMaterialMap.end())
         {
@@ -143,8 +139,7 @@ namespace SceneLoader
     }
 
 
-    void
-    GLTFResourceSet::StoreGLTFTextureById(const std::string id, Microsoft::glTF::Texture texture)
+    void SceneResourceSet::StoreGLTFTextureById(const std::string id, Microsoft::glTF::Texture texture)
     {
         // Make sure we haven't stored this before
         assert(m_gltfTextureMap.find(GetHSTRINGFromStdString(id)) == m_gltfTextureMap.end());
@@ -153,8 +148,7 @@ namespace SceneLoader
     }
 
 
-    bool
-    GLTFResourceSet::GetGLTFTextureById(const std::string id, Microsoft::glTF::Texture* pTexture)
+    bool SceneResourceSet::GetGLTFTextureById(const std::string id, Microsoft::glTF::Texture* pTexture)
     {
         if (m_gltfTextureMap.find(GetHSTRINGFromStdString(id)) == m_gltfTextureMap.end())
         {
@@ -170,8 +164,7 @@ namespace SceneLoader
     }
 
 
-    void
-    GLTFResourceSet::CreateSceneMaterialObjects()
+    void SceneResourceSet::CreateSceneMaterialObjects()
     {
         for (std::map<winrt::hstring, Microsoft::glTF::Material>::iterator materialIterator = m_gltfMaterialMap.begin(); materialIterator != m_gltfMaterialMap.end(); materialIterator++)
         {
@@ -285,8 +278,7 @@ namespace SceneLoader
     }
 
 
-    SceneSurfaceMaterialInput
-    GLTFResourceSet::GetMaterialInputFromTextureId(const std::string textureId)
+    SceneSurfaceMaterialInput SceneResourceSet::GetMaterialInputFromTextureId(const std::string textureId)
     {
         static uint16_t sCount = 0;
         Microsoft::glTF::Sampler sampler;
@@ -316,8 +308,7 @@ namespace SceneLoader
     }
 
 
-    void
-    GLTFResourceSet::SetSceneSampler(winrt::Windows::UI::Composition::Scenes::SceneSurfaceMaterialInput sceneSurfaceMaterialInput, Microsoft::glTF::Sampler sampler)
+    void SceneResourceSet::SetSceneSampler(winrt::Windows::UI::Composition::Scenes::SceneSurfaceMaterialInput sceneSurfaceMaterialInput, Microsoft::glTF::Sampler sampler)
     {
         sceneSurfaceMaterialInput.BitmapInterpolationMode(CompositionBitmapInterpolationMode::MagLinearMinLinearMipLinear);
 
@@ -326,8 +317,7 @@ namespace SceneLoader
         sceneSurfaceMaterialInput.WrappingVMode(GLTFWrapModeToSceneWrapMode(sampler.wrapT));
     }
 
-    void
-        GLTFResourceSet::SetLatestMeshRendererComponent(SceneMeshRendererComponent& meshRendererComponent)
+    void SceneResourceSet::SetLatestMeshRendererComponent(SceneMeshRendererComponent& meshRendererComponent)
     {
         m_latestMeshRendererComponent = meshRendererComponent;
     }

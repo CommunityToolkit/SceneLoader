@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GLTFResourceSet.h"
+#include "SceneResourceSet.h"
 
 namespace SceneLoader
 {
@@ -8,7 +8,7 @@ namespace SceneLoader
     {
         GLTFVisitor(winrt::Windows::UI::Composition::Compositor compositor,
                     winrt::Windows::UI::Composition::Scenes::SceneNode rootSceneNode,
-                    std::shared_ptr<GLTFResourceSet> resourceSet,
+                    std::shared_ptr<SceneResourceSet> resourceSet,
                     std::shared_ptr<Microsoft::glTF::GLTFResourceReader> gltfResourceReader,
                     Microsoft::glTF::Document& gltfDocument,
                     Microsoft::glTF::Scene& gltfScene);
@@ -68,6 +68,6 @@ namespace SceneLoader
         Microsoft::glTF::Scene& m_gltfScene;
 
         std::shared_ptr<Microsoft::glTF::GLTFResourceReader> m_gltfResourceReader;
-        std::shared_ptr<GLTFResourceSet> m_resourceSet;
+        std::shared_ptr<SceneResourceSet> m_resourceSet;
     };
 } // SceneLoader

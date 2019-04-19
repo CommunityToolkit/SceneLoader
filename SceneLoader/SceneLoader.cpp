@@ -1,5 +1,5 @@
 ﻿#include "pch.h"
-#include "GLTFLoader.h"
+#include "SceneLoader.h"
 
 #include "UtilForIntermingledNamespaces.h"
 #include "Bounds3D.h"
@@ -23,7 +23,7 @@ namespace winrt {
 }
 using namespace winrt;
 
-namespace winrt::GLTFLoaderComponent::implementation
+namespace winrt::SceneLoaderComponent::implementation
 {
     struct MemBuf : std::streambuf
     {
@@ -58,7 +58,7 @@ namespace winrt::GLTFLoaderComponent::implementation
         }
     };
 
-    SceneNode GLTFLoader::Load(IBuffer buffer, Compositor compositor)
+    SceneNode SceneLoader::Load(IBuffer buffer, Compositor compositor)
     {
         auto memoryBuffer = winrt::Windows::Storage::Streams::Buffer::CreateMemoryBufferOverIBuffer(buffer);
         auto memoryBufferReference = memoryBuffer.CreateReference();
@@ -95,7 +95,7 @@ namespace winrt::GLTFLoaderComponent::implementation
         return worldNode;
     }
 
-    void GLTFLoader::ParseGLTF(BYTE* data, UINT32 capacity, Compositor& compositor, SceneNode& rootNode)
+    void SceneLoader::ParseGLTF(BYTE* data, UINT32 capacity, Compositor& compositor, SceneNode& rootNode)
     {
         auto streamReader = make_shared<StreamReader>(data, capacity);
         auto spifstream = streamReader->GetInputStream("");
@@ -112,7 +112,7 @@ namespace winrt::GLTFLoaderComponent::implementation
         DoIt(gltfDoc, resourceReader, compositor, rootNode);
     }
 
-    void GLTFLoader::DoIt(Document& gltfDoc, shared_ptr<GLTFResourceReader> resourceReader, Compositor& compositor, SceneNode& rootNode)
+    void SceneLoader::DoIt(Document& gltfDoc, shared_ptr<GLTFResourceReader> resourceReader, Compositor& compositor, SceneNode& rootNode)
     {
         //////////////////////////////////////////////////////////////////////////////
         //
@@ -121,7 +121,7 @@ namespace winrt::GLTFLoaderComponent::implementation
         //////////////////////////////////////////////////////////////////////////////
         auto scene = gltfDoc.GetDefaultScene();
 
-        shared_ptr<GLTFResourceSet> resourceSet = make_shared<GLTFResourceSet>(compositor);
+        shared_ptr<SceneResourceSet> resourceSet = make_shared<SceneResourceSet>(compositor);
 
         Visit(gltfDoc, DefaultSceneIndex, GLTFVisitor(
             compositor,

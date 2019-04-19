@@ -48,8 +48,8 @@ namespace SceneLoader
             UINT imageHeight = 0;
             winrt::check_hresult(cpSource->GetSize(&imageWidth, &imageHeight));
             SizeInt32 size{ static_cast<int32_t>(imageWidth), static_cast<int32_t>(imageHeight) }; // FIXME: conversion from 'UINT' to 'int32_t' requires a narrowing conversion
-            DirectXPixelFormat pixelFormat = DirectXPixelFormat::B8G8R8A8UIntNormalized; // Warning: GLTFResourceSet::EnsureMipMapSurfaceId hard codes these values
-            DirectXAlphaMode alphaMode = DirectXAlphaMode::Premultiplied; // Warning: GLTFResourceSet::EnsureMipMapSurfaceId hard codes these values
+            DirectXPixelFormat pixelFormat = DirectXPixelFormat::B8G8R8A8UIntNormalized; // Warning: SceneResourceSet::EnsureMipMapSurfaceId hard codes these values
+            DirectXAlphaMode alphaMode = DirectXAlphaMode::Premultiplied; // Warning: SceneResourceSet::EnsureMipMapSurfaceId hard codes these values
 
             CompositionMipmapSurface mipmap = EnsureMipMapSurfaceId(
                 image.id,

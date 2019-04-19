@@ -18,7 +18,7 @@ namespace SceneLoader
 {
     GLTFVisitor::GLTFVisitor(Compositor compositor,
         SceneNode rootSceneNode,
-        shared_ptr<GLTFResourceSet> resourceSet,
+        shared_ptr<SceneResourceSet> resourceSet,
         shared_ptr<GLTFResourceReader> gltfResourceReader,
         Document& gltfDocument,
         Scene& gltfScene) :

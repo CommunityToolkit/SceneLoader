@@ -2,10 +2,10 @@
 
 namespace SceneLoader
 {
-    class GLTFResourceSet
+    class SceneResourceSet
     {
     public:
-        GLTFResourceSet(winrt::Windows::UI::Composition::Compositor compositor);
+        SceneResourceSet(winrt::Windows::UI::Composition::Compositor compositor);
 
         winrt::Windows::UI::Composition::Scenes::SceneMetallicRoughnessMaterial EnsureMaterialById(const std::string id);
 

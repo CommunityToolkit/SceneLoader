@@ -1,0 +1,9 @@
+namespace GLTFLoaderComponent
+{
+    [default_interface]
+    runtimeclass GLTFLoader
+    {
+        GLTFLoader();
+        Windows.UI.Composition.Scenes.SceneNode Load(Windows.Storage.Streams.IBuffer buffer, Windows.UI.Composition.Compositor compositor);
+    }
+}

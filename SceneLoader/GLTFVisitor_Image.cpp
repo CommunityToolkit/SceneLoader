@@ -56,80 +56,80 @@ namespace SceneLoader
                 size,
                 pixelFormat,
                 alphaMode
-				);
+                );
 
-			com_ptr<ID2D1Bitmap> cpCurrentSourceBitmap;
+            com_ptr<ID2D1Bitmap> cpCurrentSourceBitmap;
 
-			// Create highest resolution source bitmap
-			{
-				com_ptr<ID2D1DeviceContext> cpD2DContext;
-
-				// Create Scalar
-				com_ptr<IWICBitmapScaler> cpScaler;
-				winrt::check_hresult(cpWIC->CreateBitmapScaler(cpScaler.put()));
-
-				winrt::check_hresult(cpScaler->Initialize(
-					cpSource.get(),                     // Bitmap source to scale.
-					imageWidth,                         // Scale width to half of original.
-					imageHeight,                        // Scale height to half of original.
-					WICBitmapInterpolationModeFant));   // Use Fant mode interpolation.
-
-				com_ptr<IWICFormatConverter> cpConverter;
-
-				winrt::check_hresult(cpWIC->CreateFormatConverter(cpConverter.put()));
-				winrt::check_hresult(cpConverter->Initialize(
-					cpScaler.get(),
-					/*WicPixelFormatFromDirectXPixelFormat(pixelFormat, alphaMode)*/GUID_WICPixelFormat32bppPBGRA,
-					WICBitmapDitherTypeNone,
-					nullptr,
-					0.0f,
-					WICBitmapPaletteTypeMedianCut));
-
-				CompositionDrawingSurface cpDrawingSurface = mipmap.GetDrawingSurfaceForLevel(0);
-				com_ptr<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop> cpDrawingSurfaceInterop = cpDrawingSurface.as<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop>();
-
-				POINT surfaceUpdateOffset;
-				winrt::check_hresult(cpDrawingSurfaceInterop->BeginDraw(
-					nullptr,
-					IID_PPV_ARGS(cpD2DContext.put()),
-					&surfaceUpdateOffset));
-
-				com_ptr<ID2D1BitmapRenderTarget> cpCompatibleRenderTarget;
-				winrt::check_hresult(cpD2DContext->CreateCompatibleRenderTarget(cpCompatibleRenderTarget.put()));
-
-				winrt::check_hresult(cpCompatibleRenderTarget->CreateBitmapFromWicBitmap(
-					cpConverter.get(),
-					nullptr,
-					cpCurrentSourceBitmap.put()));
-
-				winrt::check_hresult(cpDrawingSurfaceInterop->EndDraw());
-			}
-
-			float sourceBitmapDpiX, sourceBitmapDpiY;
-				
-			cpCurrentSourceBitmap->GetDpi(&sourceBitmapDpiX, &sourceBitmapDpiY);
-
-			for (UINT i = 0; i < mipmap.LevelCount(); ++i)
+            // Create highest resolution source bitmap
             {
-				CompositionDrawingSurface cpDrawingSurface = mipmap.GetDrawingSurfaceForLevel(i);
-				com_ptr<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop> cpDrawingSurfaceInterop = cpDrawingSurface.as<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop>();
-				com_ptr<ID2D1DeviceContext> cpD2DContext;
+                com_ptr<ID2D1DeviceContext> cpD2DContext;
+
+                // Create Scalar
+                com_ptr<IWICBitmapScaler> cpScaler;
+                winrt::check_hresult(cpWIC->CreateBitmapScaler(cpScaler.put()));
+
+                winrt::check_hresult(cpScaler->Initialize(
+                    cpSource.get(),                     // Bitmap source to scale.
+                    imageWidth,                         // Scale width to half of original.
+                    imageHeight,                        // Scale height to half of original.
+                    WICBitmapInterpolationModeFant));   // Use Fant mode interpolation.
+
+                com_ptr<IWICFormatConverter> cpConverter;
+
+                winrt::check_hresult(cpWIC->CreateFormatConverter(cpConverter.put()));
+                winrt::check_hresult(cpConverter->Initialize(
+                    cpScaler.get(),
+                    /*WicPixelFormatFromDirectXPixelFormat(pixelFormat, alphaMode)*/GUID_WICPixelFormat32bppPBGRA,
+                    WICBitmapDitherTypeNone,
+                    nullptr,
+                    0.0f,
+                    WICBitmapPaletteTypeMedianCut));
+
+                CompositionDrawingSurface cpDrawingSurface = mipmap.GetDrawingSurfaceForLevel(0);
+                com_ptr<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop> cpDrawingSurfaceInterop = cpDrawingSurface.as<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop>();
+
+                POINT surfaceUpdateOffset;
+                winrt::check_hresult(cpDrawingSurfaceInterop->BeginDraw(
+                    nullptr,
+                    IID_PPV_ARGS(cpD2DContext.put()),
+                    &surfaceUpdateOffset));
+
+                com_ptr<ID2D1BitmapRenderTarget> cpCompatibleRenderTarget;
+                winrt::check_hresult(cpD2DContext->CreateCompatibleRenderTarget(cpCompatibleRenderTarget.put()));
+
+                winrt::check_hresult(cpCompatibleRenderTarget->CreateBitmapFromWicBitmap(
+                    cpConverter.get(),
+                    nullptr,
+                    cpCurrentSourceBitmap.put()));
+
+                winrt::check_hresult(cpDrawingSurfaceInterop->EndDraw());
+            }
+
+            float sourceBitmapDpiX, sourceBitmapDpiY;
+                
+            cpCurrentSourceBitmap->GetDpi(&sourceBitmapDpiX, &sourceBitmapDpiY);
+
+            for (UINT i = 0; i < mipmap.LevelCount(); ++i)
+            {
+                CompositionDrawingSurface cpDrawingSurface = mipmap.GetDrawingSurfaceForLevel(i);
+                com_ptr<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop> cpDrawingSurfaceInterop = cpDrawingSurface.as<ABI::Windows::UI::Composition::ICompositionDrawingSurfaceInterop>();
+                com_ptr<ID2D1DeviceContext> cpD2DContext;
 
 #ifndef NDEBUG
-				{
-					D2D1_SIZE_U sourceSize2 = cpCurrentSourceBitmap->GetPixelSize();
+                {
+                    D2D1_SIZE_U sourceSize2 = cpCurrentSourceBitmap->GetPixelSize();
 
-					assert(sourceSize2.width == imageWidth);
-					assert(sourceSize2.height == imageHeight);
-				}
+                    assert(sourceSize2.width == imageWidth);
+                    assert(sourceSize2.height == imageHeight);
+                }
 #endif
 
-				POINT surfaceUpdateOffset;
-				winrt::check_hresult(cpDrawingSurfaceInterop->BeginDraw(
-					nullptr,
-					IID_PPV_ARGS(cpD2DContext.put()),
-					&surfaceUpdateOffset));
-				
+                POINT surfaceUpdateOffset;
+                winrt::check_hresult(cpDrawingSurfaceInterop->BeginDraw(
+                    nullptr,
+                    IID_PPV_ARGS(cpD2DContext.put()),
+                    &surfaceUpdateOffset));
+                
                 D2D1_RECT_F destRect;
                 destRect.left = (float)surfaceUpdateOffset.x;
                 destRect.top = (float)surfaceUpdateOffset.y;
@@ -143,7 +143,7 @@ namespace SceneLoader
                     &destRect,
                     1.0f,
                     D2D1_BITMAP_INTERPOLATION_MODE_LINEAR
-					);
+                    );
 
                 // For debugging, turn this on to clobber the contents with red
 #if 0
@@ -165,40 +165,40 @@ namespace SceneLoader
                 imageWidth = std::max(imageWidth / 2, 1U);
                 imageHeight = std::max(imageHeight / 2, 1U);
 
-				// Now we need to generate the next level source bitmap that's going to be used for 
-				// the next imagewidth/height.  Note that imageWidth/Height have already been divided
-				// by 2.
-				com_ptr<ID2D1BitmapRenderTarget> cpNewD2DTarget;
+                // Now we need to generate the next level source bitmap that's going to be used for 
+                // the next imagewidth/height.  Note that imageWidth/Height have already been divided
+                // by 2.
+                com_ptr<ID2D1BitmapRenderTarget> cpNewD2DTarget;
 
-				D2D1_SIZE_F newDesiredSizeF = D2D1::SizeF(static_cast<float>(imageWidth) / sourceBitmapDpiX, static_cast<float>(imageHeight) / sourceBitmapDpiY);
+                D2D1_SIZE_F newDesiredSizeF = D2D1::SizeF(static_cast<float>(imageWidth) / sourceBitmapDpiX, static_cast<float>(imageHeight) / sourceBitmapDpiY);
 
-				// Compatible Target should match format
-				winrt::check_hresult(cpD2DContext->CreateCompatibleRenderTarget(
-					newDesiredSizeF,
-					D2D1::SizeU(imageWidth, imageHeight),
-					cpCurrentSourceBitmap->GetPixelFormat(),
-					D2D1_COMPATIBLE_RENDER_TARGET_OPTIONS_NONE,
-					cpNewD2DTarget.put()
-				    ));
+                // Compatible Target should match format
+                winrt::check_hresult(cpD2DContext->CreateCompatibleRenderTarget(
+                    newDesiredSizeF,
+                    D2D1::SizeU(imageWidth, imageHeight),
+                    cpCurrentSourceBitmap->GetPixelFormat(),
+                    D2D1_COMPATIBLE_RENDER_TARGET_OPTIONS_NONE,
+                    cpNewD2DTarget.put()
+                    ));
 
-				cpNewD2DTarget->BeginDraw();
+                cpNewD2DTarget->BeginDraw();
 
-				cpNewD2DTarget->DrawBitmap(
-					cpCurrentSourceBitmap.get(),
-					D2D1::RectF(0.0f, 0.0f, newDesiredSizeF.width, newDesiredSizeF.height),
-					1.0f,
-					D2D1_BITMAP_INTERPOLATION_MODE_LINEAR
-					);
+                cpNewD2DTarget->DrawBitmap(
+                    cpCurrentSourceBitmap.get(),
+                    D2D1::RectF(0.0f, 0.0f, newDesiredSizeF.width, newDesiredSizeF.height),
+                    1.0f,
+                    D2D1_BITMAP_INTERPOLATION_MODE_LINEAR
+                    );
 
-				winrt::check_hresult(cpNewD2DTarget->Flush());
+                winrt::check_hresult(cpNewD2DTarget->Flush());
 
-				winrt::check_hresult(cpNewD2DTarget->EndDraw());
+                winrt::check_hresult(cpNewD2DTarget->EndDraw());
 
-				com_ptr<ID2D1Bitmap> cpNewBitmap;
-				winrt::check_hresult(cpNewD2DTarget->GetBitmap(cpNewBitmap.put()));
+                com_ptr<ID2D1Bitmap> cpNewBitmap;
+                winrt::check_hresult(cpNewD2DTarget->GetBitmap(cpNewBitmap.put()));
 
-				// Now that we've generated the next level of bitmap, replace our current one
-				cpCurrentSourceBitmap = cpNewBitmap;
+                // Now that we've generated the next level of bitmap, replace our current one
+                cpCurrentSourceBitmap = cpNewBitmap;
             }
         }
     }

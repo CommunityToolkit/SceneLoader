@@ -6,7 +6,7 @@ namespace winrt::SceneLoaderComponent::implementation
 {
     struct SceneLoader : SceneLoaderT<SceneLoader>
     {
-		SceneLoader() = default;
+        SceneLoader() = default;
 
         winrt::Windows::UI::Composition::Scenes::SceneNode Load(winrt::Windows::Storage::Streams::IBuffer buffer, winrt::Windows::UI::Composition::Compositor compositor);
 

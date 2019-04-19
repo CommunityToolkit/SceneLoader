@@ -33,7 +33,7 @@ namespace SceneLoader
     }
 
 
-	SceneResourceSet::SceneResourceSet(winrt::Windows::UI::Composition::Compositor compositor) :
+    SceneResourceSet::SceneResourceSet(winrt::Windows::UI::Composition::Compositor compositor) :
         m_compositor(compositor),
         m_sceneMaterialMap(single_threaded_map<hstring, SceneMetallicRoughnessMaterial>()),
         m_sceneSurfaceMaterialInputMap(single_threaded_map<hstring, SceneSurfaceMaterialInput>()),

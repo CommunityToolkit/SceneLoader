@@ -3,7 +3,7 @@ namespace SceneLoaderComponent
     [default_interface]
     runtimeclass SceneLoader
     {
-		SceneLoader();
+        SceneLoader();
         Windows.UI.Composition.Scenes.SceneNode Load(Windows.Storage.Streams.IBuffer buffer, Windows.UI.Composition.Compositor compositor);
     }
 }

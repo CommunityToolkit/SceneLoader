@@ -90,7 +90,8 @@ namespace SceneLoader
         return m_sceneMipMapSurfaceMap.Lookup(GetHSTRINGFromStdString(id));
     }
 
-    void SceneResourceSet::StoreGLTFSamplerById(const std::string id, Microsoft::glTF::Sampler sampler)
+    void
+    SceneResourceSet::StoreGLTFSamplerById(const std::string id, Microsoft::glTF::Sampler sampler)
     {
         // Make sure we haven't stored this before
         assert(m_gltfSamplerMap.find(GetHSTRINGFromStdString(id)) == m_gltfSamplerMap.end());
@@ -98,7 +99,8 @@ namespace SceneLoader
         m_gltfSamplerMap.insert(std::map<winrt::hstring, Microsoft::glTF::Sampler>::value_type(GetHSTRINGFromStdString(id), sampler));
     }
 
-    bool SceneResourceSet::GetGLTFSamplerById(const std::string id, Microsoft::glTF::Sampler* pSampler)
+    bool
+    SceneResourceSet::GetGLTFSamplerById(const std::string id, Microsoft::glTF::Sampler* pSampler)
     {
         if (m_gltfSamplerMap.find(GetHSTRINGFromStdString(id)) == m_gltfSamplerMap.end())
         {
@@ -114,7 +116,8 @@ namespace SceneLoader
     }
 
 
-    void SceneResourceSet::StoreGLTFMaterialById(const std::string id, Microsoft::glTF::Material material)
+    void
+    SceneResourceSet::StoreGLTFMaterialById(const std::string id, Microsoft::glTF::Material material)
     {
         // Make sure we haven't stored this before
         assert(m_gltfMaterialMap.find(GetHSTRINGFromStdString(id)) == m_gltfMaterialMap.end());
@@ -123,7 +126,8 @@ namespace SceneLoader
     }
 
 
-    bool SceneResourceSet::GetGLTFMaterialById(const std::string id, Microsoft::glTF::Material* pMaterial)
+    bool
+    SceneResourceSet::GetGLTFMaterialById(const std::string id, Microsoft::glTF::Material* pMaterial)
     {
         if (m_gltfMaterialMap.find(GetHSTRINGFromStdString(id)) == m_gltfMaterialMap.end())
         {
@@ -139,7 +143,8 @@ namespace SceneLoader
     }
 
 
-    void SceneResourceSet::StoreGLTFTextureById(const std::string id, Microsoft::glTF::Texture texture)
+    void
+    SceneResourceSet::StoreGLTFTextureById(const std::string id, Microsoft::glTF::Texture texture)
     {
         // Make sure we haven't stored this before
         assert(m_gltfTextureMap.find(GetHSTRINGFromStdString(id)) == m_gltfTextureMap.end());
@@ -148,7 +153,8 @@ namespace SceneLoader
     }
 
 
-    bool SceneResourceSet::GetGLTFTextureById(const std::string id, Microsoft::glTF::Texture* pTexture)
+    bool
+    SceneResourceSet::GetGLTFTextureById(const std::string id, Microsoft::glTF::Texture* pTexture)
     {
         if (m_gltfTextureMap.find(GetHSTRINGFromStdString(id)) == m_gltfTextureMap.end())
         {
@@ -164,7 +170,8 @@ namespace SceneLoader
     }
 
 
-    void SceneResourceSet::CreateSceneMaterialObjects()
+    void
+    SceneResourceSet::CreateSceneMaterialObjects()
     {
         for (std::map<winrt::hstring, Microsoft::glTF::Material>::iterator materialIterator = m_gltfMaterialMap.begin(); materialIterator != m_gltfMaterialMap.end(); materialIterator++)
         {
@@ -278,7 +285,8 @@ namespace SceneLoader
     }
 
 
-    SceneSurfaceMaterialInput SceneResourceSet::GetMaterialInputFromTextureId(const std::string textureId)
+    SceneSurfaceMaterialInput
+    SceneResourceSet::GetMaterialInputFromTextureId(const std::string textureId)
     {
         static uint16_t sCount = 0;
         Microsoft::glTF::Sampler sampler;
@@ -308,7 +316,8 @@ namespace SceneLoader
     }
 
 
-    void SceneResourceSet::SetSceneSampler(winrt::Windows::UI::Composition::Scenes::SceneSurfaceMaterialInput sceneSurfaceMaterialInput, Microsoft::glTF::Sampler sampler)
+    void
+    SceneResourceSet::SetSceneSampler(winrt::Windows::UI::Composition::Scenes::SceneSurfaceMaterialInput sceneSurfaceMaterialInput, Microsoft::glTF::Sampler sampler)
     {
         sceneSurfaceMaterialInput.BitmapInterpolationMode(CompositionBitmapInterpolationMode::MagLinearMinLinearMipLinear);
 
@@ -317,7 +326,8 @@ namespace SceneLoader
         sceneSurfaceMaterialInput.WrappingVMode(GLTFWrapModeToSceneWrapMode(sampler.wrapT));
     }
 
-    void SceneResourceSet::SetLatestMeshRendererComponent(SceneMeshRendererComponent& meshRendererComponent)
+    void
+    SceneResourceSet::SetLatestMeshRendererComponent(SceneMeshRendererComponent& meshRendererComponent)
     {
         m_latestMeshRendererComponent = meshRendererComponent;
     }

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Component.SceneLoader.g.h"
+#include "SceneLoader.g.h"
 
 namespace winrt::SceneLoaderComponent::implementation
 {

@@ -227,6 +227,9 @@ if (!(Test-Path $CAKE_EXE)) {
     Throw "Could not find Cake.exe at $CAKE_EXE"
 }
 
+Write-Host "Restoring Nuget Packages..."
+Nuget restore ..\SceneLoader.sln
+
 # Build Cake arguments
 $cakeArguments = @("$Script");
 if ($Target) { $cakeArguments += "-target=$Target" }

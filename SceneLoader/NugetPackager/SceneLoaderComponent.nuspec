@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+  <metadata>
+    <id>SceneLoaderComponent</id>
+    <version>1.0.0</version>
+    <authors>chrisra</authors>
+    <owners>chrisra</owners>
+    <licenseUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</licenseUrl>
+    <projectUrl>https://github.com/windows-toolkit/SceneLoader</projectUrl>
+    <iconUrl>http://LICENSE_URL_HERE_OR_DELETE_THIS_LINE</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>Parses a GLTF file and produces a WUC SceneNode.</description>
+    <releaseNotes></releaseNotes>
+    <copyright>Copyright 2019</copyright>
+  </metadata>
+</package>

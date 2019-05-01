@@ -257,19 +257,20 @@ Task("Package")
     .IsDependentOn("InheritDoc")
     .Does(() =>
 {
-    // Invoke the pack target to generate the code to be packed.
-    MSBuildSolution("Pack", ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
+    // // Invoke the pack target to generate the code to be packed.
+    // MSBuildSolution("Pack", ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
 
-    foreach (var nuspec in GetFiles("./*.nuspec"))
-    {
-        var nuGetPackSettings = new NuGetPackSettings
-        {
-            OutputDirectory = nupkgDir,
-            Version = Version
-        };
+    // foreach (var nuspec in GetFiles("./*.nuspec"))
+    // {
+    //     var nuGetPackSettings = new NuGetPackSettings
+    //     {
+    //         OutputDirectory = nupkgDir,
+    //         Version = Version
+    //     };
 
-        NuGetPack(nuspec, nuGetPackSettings);
-    }
+    //     NuGetPack(nuspec, nuGetPackSettings);
+    // }
+    StartPowershellFile("./Nuget-prep.ps1");
 });
 
 Task("UpdateHeaders")

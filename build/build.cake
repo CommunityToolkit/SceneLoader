@@ -203,19 +203,23 @@ Task("Version")
     Information($"\r\nBuild Version: {Version}");
 });
 
-Task("Build")
-    .Description("Build all projects and get the assemblies")
+Task("Restore")
+    .Description("Restore all Nuget packages used by solution")
     .IsDependentOn("Version")
     .Does(() =>
 {
+    Information("\r\nRestoring Nuget Packages");
+    StartPowershellFile("./Restore-NugetPackages.ps1");
+});
+
+Task("Build")
+    .Description("Build all projects and get the assemblies")
+    .IsDependentOn("Restore")
+    .Does(() =>
+{
     Information("\r\nBuilding Solution");
-
-    // Restore NuGet packages.
-    MSBuildSolution("Restore");
-
     EnsureDirectoryExists(nupkgDir);
 
-    // Build.
     MSBuildSolution("Build", ("GenerateLibraryLayout", "true"));
 });
 
@@ -257,24 +261,13 @@ Task("Package")
     .IsDependentOn("InheritDoc")
     .Does(() =>
 {
-    // // Invoke the pack target to generate the code to be packed.
-    // MSBuildSolution("Pack", ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
-
-    // foreach (var nuspec in GetFiles("./*.nuspec"))
-    // {
-    //     var nuGetPackSettings = new NuGetPackSettings
-    //     {
-    //         OutputDirectory = nupkgDir,
-    //         Version = Version
-    //     };
-
-    //     NuGetPack(nuspec, nuGetPackSettings);
-    // }
-    StartPowershellFile("./Nuget-prep.ps1");
+    Information("\r\nCopy files needed for Nuget package into a directory and create the package");
+    StartPowershellFile("./Package-Nuget.ps1");
 });
 
 Task("UpdateHeaders")
     .Description("Updates the headers in *.cs files")
+    .IsDependentOn("Package")
     .Does(() =>
 {
     VerifyHeaders(true);
@@ -282,6 +275,7 @@ Task("UpdateHeaders")
 
 Task("StyleXaml")
     .Description("Ensures XAML Formatting is clean")
+    .IsDependentOn("UpdateHeaders")
     .Does(() =>
 {
     Information("\r\nDownloading XamlStyler...");

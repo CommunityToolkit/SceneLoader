@@ -72,7 +72,9 @@ void MSBuildSolution(
     foreach (var platformTarget in new []
     {
         PlatformTarget.x86,
-        PlatformTarget.MSIL,
+        PlatformTarget.x64,
+        PlatformTarget.ARM,
+        PlatformTarget.MSIL
     })
     {
         msBuildSettings.PlatformTarget = platformTarget;

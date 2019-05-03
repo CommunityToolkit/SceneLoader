@@ -3,6 +3,7 @@
 // See the LICENSE file in the project root for more information.
 
 using System;
+using System.Numerics;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Streams;
@@ -13,60 +14,54 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using SceneLoaderComponent;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace TestViewer
 {
     /// <summary>
-    /// An empty page that can be used on its own or navigated to within a Frame.
+    /// A page that generates a gltf image using the SceneLoaderComponent.
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        Compositor compositor;
-        SceneVisual sceneVisual;
+        Compositor _compositor;
+        SceneVisual _sceneVisual;
 
         public MainPage()
         {
             this.InitializeComponent();
 
-            compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
 
-            var root = compositor.CreateContainerVisual();
+            var root = _compositor.CreateContainerVisual();
 
-            root.Size = new System.Numerics.Vector2(1000, 1000);
+            root.Size = new Vector2(1000, 1000);
             ElementCompositionPreview.SetElementChildVisual(this, root);
 
-            sceneVisual = SceneVisual.Create(compositor);
-            root.Children.InsertAtTop(sceneVisual);
+            _sceneVisual = SceneVisual.Create(_compositor);
+            root.Children.InsertAtTop(_sceneVisual);
 
-            sceneVisual.Offset = new System.Numerics.Vector3(300, 300, 0);
-            sceneVisual.RotationAxis = new System.Numerics.Vector3(0, 1, 0);
+            _sceneVisual.Offset = new Vector3(300, 300, 0);
+            _sceneVisual.RotationAxis = new Vector3(0, 1, 0);
 
-            var rotationAnimation = compositor.CreateScalarKeyFrameAnimation();
+            var rotationAnimation = _compositor.CreateScalarKeyFrameAnimation();
 
-            rotationAnimation.InsertKeyFrame(0f, 0.0f, compositor.CreateLinearEasingFunction());
-            rotationAnimation.InsertKeyFrame(0.5f, 360.0f, compositor.CreateLinearEasingFunction());
-            rotationAnimation.InsertKeyFrame(1f, 0.0f, compositor.CreateLinearEasingFunction());
+            rotationAnimation.InsertKeyFrame(0, 0, _compositor.CreateLinearEasingFunction());
+            rotationAnimation.InsertKeyFrame(0.5f, 360, _compositor.CreateLinearEasingFunction());
+            rotationAnimation.InsertKeyFrame(1, 0, _compositor.CreateLinearEasingFunction());
 
             rotationAnimation.Duration = TimeSpan.FromSeconds(8);
             rotationAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
 
-            sceneVisual.StartAnimation("RotationAngleInDegrees", rotationAnimation);
+            _sceneVisual.StartAnimation("RotationAngleInDegrees", rotationAnimation);
         }
+
         async Task<SceneNode> LoadGLTF(Uri uri)
         {
             var storageFile = await StorageFile.GetFileFromApplicationUriAsync(uri);
-            IBuffer buffer = await FileIO.ReadBufferAsync(storageFile);
+            var buffer = await FileIO.ReadBufferAsync(storageFile);
 
-            SceneLoader loader = new SceneLoader();
-            return loader.Load(buffer, compositor);
+            var loader = new SceneLoader();
+            return loader.Load(buffer, _compositor);
         }
 
-        private async void Page_Loaded(object sender, RoutedEventArgs e)
-        {
-            var sceneNode = await LoadGLTF(new Uri("ms-appx:///Assets/DamagedHelmet.gltf"));
-
-            sceneVisual.Root = sceneNode;
-        }
+        private async void Page_Loaded(object sender, RoutedEventArgs e) => _sceneVisual.Root = await LoadGLTF(new Uri("ms-appx:///Assets/DamagedHelmet.gltf"));
     }
 }

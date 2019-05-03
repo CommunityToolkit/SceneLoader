@@ -6,12 +6,9 @@ $RootPath = Split-Path $PSScriptRoot -Parent
 $SceneLoader = "$RootPath\SceneLoader"
 $NugetPackager = "$SceneLoader\NugetPackager\"
 $lib = "$NugetPackager\lib\uap10.0"
-$runtimes = "$NugetPackager\runtimes\win19-x64\native\"
+$runtimes = "$NugetPackager\runtimes\win10-x64\native\"
 $outputDirRelease = "$RootPath\Release\SceneLoader"
 $nupkg = "$RootPath\bin\nupkg"
-
-# Force create $lib folder directory to ensure folder exists and overwrite any previous content.
-New-Item -ItemType Directory -Force -Path $lib
 
 # Copy .idl and .winmd files over to newly created $lib folder
 Copy-Item -Path "$SceneLoader\SceneLoaderComponent.idl" -Destination $lib
@@ -24,23 +21,11 @@ New-Item -ItemType Directory -Force -Path $runtimes
 Copy-Item -Path "$outputDirRelease\SceneLoaderComponent.pri" -Destination $runtimes
 Copy-Item -Path "$outputDirRelease\SceneLoaderComponent.dll" -Destination $runtimes
 
-# Save current directory
-pushd
-
-# Change to NugetPackager directory
-cd $NugetPackager
-
 # Remove any previous instances of the Nuget package
-Remove-Item *.nupkg
-
-# Create Nuget package
-Nuget Pack
+Remove-Item $NugetPackager\*.nupkg
 
 # Force create $nupkg folder directory to ensure folder exists and overwrite any previous content.
 New-Item -ItemType Directory -Force -Path $nupkg
 
-# Copy Nuget package to $nupkg directory so it can be used by Azure Devops pipeline.
-Copy-Item -Path *.nupkg -Destination $nupkg
-
-# Return to the directory the user was on at the start of the script.
-popd
+# Create Nuget package
+Nuget Pack "$NugetPackager\SceneLoaderComponent.nuspec" -OutputDirectory $nupkg

@@ -205,7 +205,7 @@ Task("Version")
 
 Task("Restore")
     .Description("Restore all Nuget packages used by solution")
-    .IsDependentOn("Version")
+    .IsDependentOn("Clean")
     .Does(() =>
 {
     Information("\r\nRestoring Nuget Packages");
@@ -267,7 +267,6 @@ Task("Package")
 
 Task("UpdateHeaders")
     .Description("Updates the headers in *.cs files")
-    .IsDependentOn("Package")
     .Does(() =>
 {
     VerifyHeaders(true);
@@ -275,7 +274,6 @@ Task("UpdateHeaders")
 
 Task("StyleXaml")
     .Description("Ensures XAML Formatting is clean")
-    .IsDependentOn("UpdateHeaders")
     .Does(() =>
 {
     Information("\r\nDownloading XamlStyler...");

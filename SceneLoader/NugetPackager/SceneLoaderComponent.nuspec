@@ -11,4 +11,22 @@
     <releaseNotes></releaseNotes>
     <copyright>Copyright 2019</copyright>
   </metadata>
+
+  <files>
+    <!-- WinMd and IntelliSense files -->
+    <file src="..\..\Release\SceneLoader\SceneLoaderComponent.winmd" target="lib\uap10.0"/>
+    <file src="..\..\Release\SceneLoader\SceneLoaderComponent.xml" target="lib\uap10.0"/>
+
+    <!-- DLLs and resources -->
+    <file src="..\..\ARM\Release\SceneLoader\SceneLoaderComponent.dll" target="runtimes\win10-arm\native"/>
+    <file src="..\..\ARM\Release\SceneLoader\SceneLoaderComponent.pri" target="runtimes\win10-arm\native"/>
+    <file src="..\..\x64\Release\SceneLoader\SceneLoaderComponent.dll" target="runtimes\win10-x64\native"/>
+    <file src="..\..\x64\Release\SceneLoader\SceneLoaderComponent.pri" target="runtimes\win10-x64\native"/>
+    <file src="..\..\Release\SceneLoader\SceneLoaderComponent.dll" target="runtimes\win10-x86\native"/>
+    <file src="..\..\Release\SceneLoader\SceneLoaderComponent.pri" target="runtimes\win10-x86\native"/>
+
+    <!-- .targets -->
+    <file src="SceneLoaderComponent.targets" target="build\native"/>
+    <file src="SceneLoaderComponent.props" target="build\native"/>
+  </files>
 </package>

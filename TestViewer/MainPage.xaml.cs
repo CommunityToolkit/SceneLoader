@@ -21,14 +21,14 @@ namespace TestViewer
     /// </summary>
     public sealed partial class MainPage : Page
     {
-        Compositor _compositor;
-        SceneVisual _sceneVisual;
+        readonly Compositor _compositor;
+        readonly SceneVisual _sceneVisual;
 
         public MainPage()
         {
             this.InitializeComponent();
 
-            _compositor = ElementCompositionPreview.GetElementVisual(this).Compositor;
+            _compositor = Window.Current.Compositor;
 
             var root = _compositor.CreateContainerVisual();
 
@@ -53,7 +53,7 @@ namespace TestViewer
             _sceneVisual.StartAnimation("RotationAngleInDegrees", rotationAnimation);
         }
 
-        async Task<SceneNode> LoadGLTF(Uri uri)
+        private async Task<SceneNode> LoadGLTF(Uri uri)
         {
             var storageFile = await StorageFile.GetFileFromApplicationUriAsync(uri);
             var buffer = await FileIO.ReadBufferAsync(storageFile);

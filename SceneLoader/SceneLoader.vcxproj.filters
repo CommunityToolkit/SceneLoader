@@ -8,10 +8,36 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
-    <ClCompile Include="Class1.cpp" />
+    <ClCompile Include="Bounds3D.cpp" />
+    <ClCompile Include="UtilForIntermingledNamespaces.cpp" />
+    <ClCompile Include="SceneLoader.cpp" />
+    <ClCompile Include="SceneResourceSet.cpp" />
+    <ClCompile Include="GLTFVisitor_Sampler.cpp" />
+    <ClCompile Include="GLTFVisitor_Skin.cpp" />
+    <ClCompile Include="GLTFVisitor_Texture.cpp" />
+    <ClCompile Include="GLTFVisitor.cpp" />
+    <ClCompile Include="GLTFVisitor_Camera.cpp" />
+    <ClCompile Include="GLTFVisitor_Material.cpp" />
+    <ClCompile Include="GLTFVisitor_Mesh.cpp" />
+    <ClCompile Include="GLTFVisitor_Node.cpp" />
+    <ClCompile Include="GLTFVisitor_Image.cpp" />
+    <ClCompile Include="Generated Files\module.g.cpp" />
+    <ClCompile Include="GLTFVisitor_MeshPrimitive.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
-    <ClInclude Include="Class1.h" />
+    <ClInclude Include="Bounds3D.h" />
+    <ClInclude Include="UtilForIntermingledNamespaces.h" />
+    <ClInclude Include="SceneLoader.h" />
+    <ClInclude Include="SceneResourceSet.h" />
+    <ClInclude Include="GLTFVisitor.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+    <None Include="SceneLoaderComponent.def" />
+    <None Include="SceneLoaderComponent.nuspec" />
+  </ItemGroup>
+  <ItemGroup>
+    <Midl Include="SceneLoaderComponent.idl" />
   </ItemGroup>
 </Project>

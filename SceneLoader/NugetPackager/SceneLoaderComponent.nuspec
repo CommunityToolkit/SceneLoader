@@ -2,7 +2,7 @@
 <package >
   <metadata>
     <id>SceneLoaderComponent</id>
-    <version>1.0.0</version>
+    <version>$version$</version>
     <authors>developer</authors>
     <owners>developer</owners>
     <projectUrl>https://github.com/windows-toolkit/SceneLoader</projectUrl>

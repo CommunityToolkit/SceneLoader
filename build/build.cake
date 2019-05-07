@@ -31,6 +31,8 @@ var toolsDir = $"{buildDir}/tools";
 var binDir = $"{baseDir}/bin";
 var nupkgDir =$"{binDir}/nupkg";
 
+var nuspec = $"{baseDir}/SceneLoader/NugetPackager/SceneLoaderComponent.nuspec";
+
 var styler = $"{toolsDir}/XamlStyler.Console/tools/xstyler.exe";
 var stylerFile = $"{baseDir}/settings.xamlstyler";
 
@@ -237,7 +239,15 @@ Task("PackageNuget")
     .Does(() =>
 {
     Information("\r\nCopy files needed for Nuget package into a directory and create the package");
-    StartPowershellFile("./Package-Nuget.ps1");
+    MSBuildSolution("Pack", ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
+
+    var nuGetPackSettings = new NuGetPackSettings
+    {
+        OutputDirectory = nupkgDir,
+        Version = Version
+    };
+
+    NuGetPack(nuspec, nuGetPackSettings);
 });
 
 Task("UpdateHeaders")

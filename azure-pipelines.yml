@@ -12,7 +12,7 @@ pr:
 pool:
   vmImage: vs2017-win2016
 
-# variables: 
+# variables:
 #   BuildConfiguration: SceneLoader
 
 steps:
@@ -30,21 +30,24 @@ steps:
   inputs:
     versionSpec: 4.7.0
 
-# - task: DotNetCoreCLI@2  
-#   inputs:
-#     command: custom
-#     custom: tool
-#     arguments: install --tool-path . nbgv
-#   displayName: Install NBGV tool
-
+# Install .NET Code Installer
 # .NET Core SDK Installer
 # - task: DotNetCoreInstaller@0
 #   inputs:
 #     packageType: 'sdk' # Options: runtime, sdk
-#     version: '2.2.100' 
+#     version: '2.2.100'
 
-# - script: nbgv cloud
-#   displayName: Set Version
+# Install NBGV Tool
+- task: DotNetCoreCLI@2
+  inputs:
+    command: custom
+    custom: tool
+    arguments: install --tool-path . nbgv
+  displayName: Install NBGV tool
+
+# Set cloud build variables
+- script: nbgv cloud
+  displayName: Set Version
 
 # Install Windows SDK 18362 (minimum compatible sdk)
 - powershell: .\build\Install-WindowsSdkISO.ps1 18362

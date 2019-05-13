@@ -27,5 +27,3 @@ For more information see the [.NET Foundation Code of Conduct](http://dotnetfoun
 ## .NET Foundation
 This project is supported by the [.NET Foundation](http://dotnetfoundation.org).
 
-
-[![Build Status](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_apis/build/status/windows-toolkit.SceneLoader?branchName=master)](https://dev.azure.com/dotnet/WindowsCommunityToolkit/_build/latest?definitionId=80&branchName=master)

@@ -9,7 +9,7 @@ SceneLoader currently produces a [SceneNode](https://docs.microsoft.com/uwp/api/
 
 ## <a name="documentation"></a> Getting Started
 * [Documentation](https://docs.microsoft.com/uwp/api/windows.ui.composition.scenes)
-* [Code Sample](/https://github.com/windows-toolkit/SceneLoader/blob/readme/TestViewer/MainPage.xaml.cs)
+* [Code Sample](https://github.com/windows-toolkit/SceneLoader/blob/readme/TestViewer/MainPage.xaml.cs)
 
 ## Build Status
 | Target | Branch | Status | Recommended NuGet package |

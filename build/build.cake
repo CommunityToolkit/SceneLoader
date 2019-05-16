@@ -2,6 +2,7 @@
 
 #addin "Cake.FileHelpers"
 #addin "Cake.Powershell"
+#addin nuget:?package=Cake.GitVersioning&version=2.3.38
 
 using System;
 using System.Linq;
@@ -13,12 +14,6 @@ using System.Text.RegularExpressions;
 
 var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
-
-//////////////////////////////////////////////////////////////////////
-// VERSIONS
-//////////////////////////////////////////////////////////////////////
-
-var gitVersioningVersion = "2.3.138";
 
 //////////////////////////////////////////////////////////////////////
 // VARIABLES
@@ -36,7 +31,6 @@ var nuspec = $"{baseDir}/SceneLoader/NugetPackager/SceneLoaderComponent.nuspec";
 var styler = $"{toolsDir}/XamlStyler.Console/tools/xstyler.exe";
 var stylerFile = $"{baseDir}/settings.xamlstyler";
 
-var versionClient = $"{toolsDir}/nerdbank.gitversioning/tools/Get-Version.ps1";
 string Version = null;
 
 //////////////////////////////////////////////////////////////////////
@@ -195,18 +189,8 @@ Task("UpdateVersionInfo")
     .Description("Updates the version information in all Projects")
     .Does(() =>
 {
-    Information("\r\nDownloading NerdBank GitVersioning...");
-    var installSettings = new NuGetInstallSettings {
-        ExcludeVersion  = true,
-        Version = gitVersioningVersion,
-        OutputDirectory = toolsDir
-    };
-
-    NuGetInstall(new []{"nerdbank.gitversioning"}, installSettings);
-
     Information("\r\nRetrieving version...");
-    var results = StartPowershellFile(versionClient);
-    Version = results[1].Properties["NuGetPackageVersion"].Value.ToString();
+    Version = GitVersioningGetVersion().NuGetPackageVersion;
     Information($"\r\nBuild Version: {Version}");
 });
 
@@ -240,13 +224,11 @@ Task("PackageNuget")
 {
     Information("\r\nCopy files needed for Nuget package into a directory and create the package");
     MSBuildSolution("Pack", ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
-
-    var nuGetPackSettings = new NuGetPackSettings
+    var nuGetPackSettings = new NuGetPackSettings 
     {
-        OutputDirectory = nupkgDir,
-        Version = Version
-    };
-
+        OutputDirectory = nupkgDir, 
+        Version = Version 
+    }; 
     NuGetPack(nuspec, nuGetPackSettings);
 });
 

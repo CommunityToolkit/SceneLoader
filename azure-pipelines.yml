@@ -30,13 +30,6 @@ steps:
   inputs:
     versionSpec: 4.7.0
 
-# Install .NET Code Installer
-# .NET Core SDK Installer
-# - task: DotNetCoreInstaller@0
-#   inputs:
-#     packageType: 'sdk' # Options: runtime, sdk
-#     version: '2.2.100'
-
 # Install NBGV Tool
 - task: DotNetCoreCLI@2
   inputs:

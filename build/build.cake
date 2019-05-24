@@ -24,9 +24,11 @@ var buildDir = $"{baseDir}/build";
 var toolsDir = $"{buildDir}/tools";
 
 var binDir = $"{baseDir}/bin";
-var nupkgDir =$"{binDir}/nupkg";
+var nupkgDir = $"{binDir}/nupkg";
+var packageDir = $"{baseDir}/packages";
 
 var nuspec = $"{baseDir}/SceneLoader/NugetPackager/SceneLoaderComponent.nuspec";
+var sceneLoaderSln = $"{baseDir}/SceneLoader.sln";
 
 var styler = $"{toolsDir}/XamlStyler.Console/tools/xstyler.exe";
 var stylerFile = $"{baseDir}/settings.xamlstyler";
@@ -166,7 +168,7 @@ Task("Clean")
     }
 
     // Run the clean target on the solution.
-    MSBuildSolution("Clean");
+    // MSBuildSolution("Clean");
 });
 
 Task("VerifyWindowsSDK")
@@ -199,7 +201,22 @@ Task("RestoreNugetPackages")
     .Does(() =>
 {
     Information("\r\nRestoring Nuget Packages");
-    StartPowershellFile("./Restore-NugetPackages.ps1");
+    // Restore nuget packages for SceneLoader vcxproj
+    var solution = new FilePath(@"..\SceneLoader\packages.config");
+    var nugetRestoreSettings = new NuGetRestoreSettings {
+        PackagesDirectory = new DirectoryPath(packageDir),
+    };
+    NuGetRestore(solution, nugetRestoreSettings);
+    
+    // Restore nuget packages for all csproj files
+    var buildSettings = new MSBuildSettings
+    {
+        MaxCpuCount = 0
+    }
+    .SetConfiguration("Release")
+    .WithTarget("Restore");
+
+    MSBuild(sceneLoaderSln, buildSettings);
 });
 
 Task("BuildSolution")

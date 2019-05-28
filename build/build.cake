@@ -2,6 +2,7 @@
 
 #addin "Cake.FileHelpers"
 #addin "Cake.Powershell"
+#addin nuget:?package=Cake.GitVersioning&version=2.3.38
 
 using System;
 using System.Linq;
@@ -15,12 +16,6 @@ var target = Argument("target", "Default");
 var configuration = Argument("configuration", "Release");
 
 //////////////////////////////////////////////////////////////////////
-// VERSIONS
-//////////////////////////////////////////////////////////////////////
-
-var gitVersioningVersion = "2.3.138";
-
-//////////////////////////////////////////////////////////////////////
 // VARIABLES
 //////////////////////////////////////////////////////////////////////
 
@@ -29,12 +24,15 @@ var buildDir = $"{baseDir}/build";
 var toolsDir = $"{buildDir}/tools";
 
 var binDir = $"{baseDir}/bin";
-var nupkgDir =$"{binDir}/nupkg";
+var nupkgDir = $"{binDir}/nupkg";
+var packageDir = $"{baseDir}/packages";
+
+var nuspec = $"{baseDir}/SceneLoader/NugetPackager/SceneLoaderComponent.nuspec";
+var sceneLoaderSln = $"{baseDir}/SceneLoader.sln";
 
 var styler = $"{toolsDir}/XamlStyler.Console/tools/xstyler.exe";
 var stylerFile = $"{baseDir}/settings.xamlstyler";
 
-var versionClient = $"{toolsDir}/nerdbank.gitversioning/tools/Get-Version.ps1";
 string Version = null;
 
 //////////////////////////////////////////////////////////////////////
@@ -170,7 +168,7 @@ Task("Clean")
     }
 
     // Run the clean target on the solution.
-    MSBuildSolution("Clean");
+    // MSBuildSolution("Clean");
 });
 
 Task("VerifyWindowsSDK")
@@ -193,18 +191,8 @@ Task("UpdateVersionInfo")
     .Description("Updates the version information in all Projects")
     .Does(() =>
 {
-    Information("\r\nDownloading NerdBank GitVersioning...");
-    var installSettings = new NuGetInstallSettings {
-        ExcludeVersion  = true,
-        Version = gitVersioningVersion,
-        OutputDirectory = toolsDir
-    };
-
-    NuGetInstall(new []{"nerdbank.gitversioning"}, installSettings);
-
     Information("\r\nRetrieving version...");
-    var results = StartPowershellFile(versionClient);
-    Version = results[1].Properties["NuGetPackageVersion"].Value.ToString();
+    Version = GitVersioningGetVersion().NuGetPackageVersion;
     Information($"\r\nBuild Version: {Version}");
 });
 
@@ -213,7 +201,22 @@ Task("RestoreNugetPackages")
     .Does(() =>
 {
     Information("\r\nRestoring Nuget Packages");
-    StartPowershellFile("./Restore-NugetPackages.ps1");
+    // Restore nuget packages for SceneLoader vcxproj
+    var solution = new FilePath(@"..\SceneLoader\packages.config");
+    var nugetRestoreSettings = new NuGetRestoreSettings {
+        PackagesDirectory = new DirectoryPath(packageDir),
+    };
+    NuGetRestore(solution, nugetRestoreSettings);
+    
+    // Restore nuget packages for all csproj files
+    var buildSettings = new MSBuildSettings
+    {
+        MaxCpuCount = 0
+    }
+    .SetConfiguration("Release")
+    .WithTarget("Restore");
+
+    MSBuild(sceneLoaderSln, buildSettings);
 });
 
 Task("BuildSolution")
@@ -237,7 +240,13 @@ Task("PackageNuget")
     .Does(() =>
 {
     Information("\r\nCopy files needed for Nuget package into a directory and create the package");
-    StartPowershellFile("./Package-Nuget.ps1");
+    MSBuildSolution("Pack", ("GenerateLibraryLayout", "true"), ("PackageOutputPath", nupkgDir));
+    var nuGetPackSettings = new NuGetPackSettings 
+    {
+        OutputDirectory = nupkgDir, 
+        Version = Version 
+    }; 
+    NuGetPack(nuspec, nuGetPackSettings);
 });
 
 Task("UpdateHeaders")

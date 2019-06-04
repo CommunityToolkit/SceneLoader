@@ -47,7 +47,7 @@ namespace SceneLoader
             }
             else
             {
-                assert(false);
+                SceneResourceSet::UnimplementedFeatureFound();
             }
 
             for (auto value : meshPrimitive.attributes)

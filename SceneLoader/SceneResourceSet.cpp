@@ -18,6 +18,8 @@ using namespace winrt;
 
 namespace SceneLoader
 {
+    // If you want to assert when we hit a feature we don't support yet, change this to true.
+    bool SceneResourceSet::s_assertOnUnimplementedFeature = false;
 
     SceneWrappingMode
     GLTFWrapModeToSceneWrapMode(Microsoft::glTF::WrapMode gltfWrapMode)
@@ -279,7 +281,7 @@ namespace SceneLoader
             case AlphaMode::ALPHA_UNKNOWN:
             default:
             {
-                assert(false);
+                UnimplementedFeatureFound();
             }
             }
 
@@ -336,4 +338,13 @@ namespace SceneLoader
         m_latestMeshRendererComponent = meshRendererComponent;
     }
 
+    void
+    SceneResourceSet::UnimplementedFeatureFound()
+    {
+        if (s_assertOnUnimplementedFeature)
+        {
+           assert(false);
+        }
+    }
+    
 } // namespace SceneLoader

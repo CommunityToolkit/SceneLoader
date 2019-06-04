@@ -39,7 +39,7 @@ namespace SceneLoader
 
         void SetLatestMeshRendererComponent(winrt::Windows::UI::Composition::Scenes::SceneMeshRendererComponent& meshRendererComponent);
 
-		static void UnimplementedFeatureFound();
+        static void UnimplementedFeatureFound();
 
     private:
         winrt::Windows::UI::Composition::Compositor m_compositor;
@@ -60,6 +60,6 @@ namespace SceneLoader
     
         winrt::Windows::UI::Composition::Scenes::SceneMeshRendererComponent m_latestMeshRendererComponent{ nullptr };
 
-		static bool s_assertOnUnimplementedFeature;
+        static bool s_assertOnUnimplementedFeature;
     };
 } // SceneLoader

@@ -39,6 +39,8 @@ namespace SceneLoader
 
         void SetLatestMeshRendererComponent(winrt::Windows::UI::Composition::Scenes::SceneMeshRendererComponent& meshRendererComponent);
 
+        static void UnimplementedFeatureFound();
+
     private:
         winrt::Windows::UI::Composition::Compositor m_compositor;
 
@@ -57,5 +59,7 @@ namespace SceneLoader
         std::map<winrt::hstring, Microsoft::glTF::Texture> m_gltfTextureMap;
     
         winrt::Windows::UI::Composition::Scenes::SceneMeshRendererComponent m_latestMeshRendererComponent{ nullptr };
+
+        static bool s_assertOnUnimplementedFeature;
     };
 } // SceneLoader

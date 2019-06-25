@@ -8,12 +8,28 @@
   </Target>
   
   <Target Name="InjectReference" BeforeTargets="ResolveAssemblyReferences">
-
-    <ItemGroup Condition=" '$(Platform)' == 'x86' or '$(Platform)' == 'x64' or '$(Platform)' == 'ARM'">
-      <Reference Include="SceneLoader">
-        <HintPath>$(MSBuildThisFileDirectory)$(Platform)\SceneLoaderComponent.winmd</HintPath>
-      </Reference>
+    <!-- x64 -->
+    <ItemGroup Condition="'$(Platform)' == 'x64'">
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-x64\native\*.dll" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-x64\lib\uap10.0\*.winmd" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-x64\lib\uap10.0\*.xml" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-x64\lib\net472\*.dll" />
     </ItemGroup>
 
+    <!-- x86 -->
+    <ItemGroup Condition="'$(Platform)' == 'x86'">
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-x86\native\*.dll" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-x86\lib\uap10.0\*.winmd" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-x86\lib\uap10.0\*.xml" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-x86\lib\net472\*.dll" />
+    </ItemGroup>
+
+    <!-- ARM -->
+    <ItemGroup Condition="'$(Platform)' == 'ARM'">
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-ARM\native\*.dll" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-ARM\lib\uap10.0\*.winmd" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-ARM\lib\uap10.0\*.xml" />
+      <ReferenceCopyLocalPaths Include="$(MSBuildThisFileDirectory)..\..\runtimes\win10-ARM\lib\net472\*.dll" />
+    </ItemGroup>
   </Target>
 </Project>

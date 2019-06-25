@@ -152,7 +152,7 @@
       <Version>10.0.18362.2002-preview</Version>
     </PackageReference>
     <PackageReference Include="SceneLoaderComponent">
-      <Version>1.0.0</Version>
+      <Version>1.0.0-build.8.4cb2711db6</Version>
     </PackageReference>
     <PackageReference Include="System.Numerics.Vectors">
       <Version>4.6.0-preview5.19224.8</Version>

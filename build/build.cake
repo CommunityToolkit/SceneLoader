@@ -95,7 +95,8 @@ static bool IsExcludedDirectory(FilePath path)
         segments.Contains("obj") ||
         segments.Contains("Generated Files") ||
         segments.Contains("tools") ||
-        segments.Contains("packages");
+        segments.Contains("packages") ||
+        segments.Contains("Samples");
 }
 
 // Returns true if the given file is source that the build system

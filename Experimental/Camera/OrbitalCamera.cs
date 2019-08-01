@@ -12,7 +12,7 @@ using Windows.UI.Xaml.Media.Media3D;
 
 namespace Experimental
 {
-    public class OrbitalCamera : Camera
+    public sealed class OrbitalCamera : Camera
     {
         private Compositor compositor;
         private FPSCamera fps_cam;
@@ -29,7 +29,7 @@ namespace Experimental
             compositor = Window.Current.Compositor;
             fps_cam = new FPSCamera();
 
-            if(FPSCamera.useExpressionAnimations)
+            if(fps_cam.UseAnimations)
             {
                 CreateExpressionAnimations();
             }
@@ -49,7 +49,7 @@ namespace Experimental
         {
             get
             {
-                if(FPSCamera.useExpressionAnimations)
+                if(fps_cam.UseAnimations)
                 {
                     Vector3 curr = Vector3.Zero;
                     return (propertySet.TryGetVector3("Target", out curr) == CompositionGetValueStatus.Succeeded)? curr : target;
@@ -62,7 +62,7 @@ namespace Experimental
             }
             set
             {
-                if (FPSCamera.useExpressionAnimations)
+                if (fps_cam.UseAnimations)
                 {
                     propertySet.InsertVector3("Target", value);
                 }
@@ -77,7 +77,7 @@ namespace Experimental
         {
             get
             {
-                if(FPSCamera.useExpressionAnimations)
+                if(fps_cam.UseAnimations)
                 {
                     float curr = 0.0f;
                     return (propertySet.TryGetScalar("Radius", out curr) == CompositionGetValueStatus.Succeeded) ? curr : radius;
@@ -89,7 +89,7 @@ namespace Experimental
             }
             set
             {
-                if(FPSCamera.useExpressionAnimations)
+                if(fps_cam.UseAnimations)
                 {
                     propertySet.InsertScalar("Radius", value);
                 }
@@ -104,7 +104,7 @@ namespace Experimental
         {
             get
             {
-                if (FPSCamera.useExpressionAnimations)
+                if (fps_cam.UseAnimations)
                 {
                     float epsilon = 0.0001f;
                     float curr = 0.0f;
@@ -119,7 +119,7 @@ namespace Experimental
             }
             set
             {
-                if(FPSCamera.useExpressionAnimations)
+                if(fps_cam.UseAnimations)
                 {
                     float epsilon = 0.0001f;
                     propertySet.InsertScalar("Latitude", MathF.Min(MathF.PI - epsilon, MathF.Max(epsilon, value)));
@@ -136,7 +136,7 @@ namespace Experimental
         {
             get
             {
-                if (FPSCamera.useExpressionAnimations)
+                if (fps_cam.UseAnimations)
                 {
                     float curr = 0.0f;
                     return (propertySet.TryGetScalar("Longitude", out curr) == CompositionGetValueStatus.Succeeded) ? curr : longitude;
@@ -148,7 +148,7 @@ namespace Experimental
             }
             set
             {
-                if(FPSCamera.useExpressionAnimations)
+                if(fps_cam.UseAnimations)
                 {
                     propertySet.InsertScalar("Longitude", value);
                 }
@@ -161,7 +161,7 @@ namespace Experimental
         }
         public bool UseAnimations
         {
-            get => FPSCamera.useExpressionAnimations;
+            get => fps_cam.UseAnimations;
             set
             {
                 if(UseAnimations != value)
@@ -238,7 +238,7 @@ namespace Experimental
         ///////////////////////////////////////////////////////////////////////////////////////////////// 
         private void updatePosition()
         {
-            if (!FPSCamera.useExpressionAnimations)
+            if (!fps_cam.UseAnimations)
             {
                 float x = radius * MathF.Sin(latitude) * MathF.Sin(longitude);
                 float y = radius * MathF.Cos(latitude);
@@ -297,9 +297,9 @@ namespace Experimental
             fpsCamera.StartAnimation("Roll", rollExpression);
         }
 
-        public Matrix4x4 CreateTransformationMatrix()
+        public Matrix4x4 CreateViewMatrix()
         {
-            return fps_cam.CreateTransformationMatrix();
+            return fps_cam.CreateViewMatrix();
         }
     }
 }

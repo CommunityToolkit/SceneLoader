@@ -8,75 +8,75 @@ using System.Threading.Tasks;
 
 namespace Experimental
 {
-    public class OrthographicProjection : Projection
+    public sealed class OrthographicProjection : Projection
     {
-        private float top, bottom, left, right;
+        private float height, width, near, far;
 
         public OrthographicProjection()
         {
-            top = 10f;
-            bottom = 10f;
-            left = 10f;
-            right = 10f;
+            height = 1000f;
+            width = 1000f;
+
+            near = 1f;
+            far = 1000f;
         }
 
-        public float Top
+        public float Height
         {
-            get => top;
+            get => height;
             set
             {
-                top = value;
-                RaisePropertyChanged("Top");
+                height = value;
+                RaisePropertyChanged("Height");
             }
         }
-        public float Bottom
+        public float Width
         {
-            get => bottom;
+            get => width;
             set
             {
-                bottom = value;
-                RaisePropertyChanged("Bottom");
+                width = value;
+                RaisePropertyChanged("Width");
             }
         }
-        public float Left
+        public float Near
         {
-            get => left;
+            get => near;
             set
             {
-                left = value;
-                RaisePropertyChanged("Left");
+                near = value;
+                RaisePropertyChanged("Near");
             }
         }
-        public float Right
+        public float Far
         {
-            get => right;
+            get => far;
             set
             {
-                right = value;
-                RaisePropertyChanged("Right");
+                far = value;
+                RaisePropertyChanged("Far");
             }
         }
 
-        public override Matrix4x4 CreateProjectionMatrix(Stretch stretch, Vector2 size)
+        public Matrix4x4 CreateNormalizingMatrix()
         {
-            // TODO
-            switch(stretch)
-            {
-                case Stretch.None:
-                    break;
-                case Stretch.Fill:
-                    break;
-                case Stretch.FixX:
-                    break;
-                case Stretch.FixY:
-                    break;
-                case Stretch.Uniform:
-                    break;
-                case Stretch.UniformToFill:
-                    break;
-            }
+            float near = -Near;
+            float far = -Far;
 
-            return Matrix4x4.Identity;
+            Matrix4x4 matNormalize = Matrix4x4.Identity;
+            matNormalize.M11 = 1 / width;
+            matNormalize.M22 = 1 / height;
+            matNormalize.M33 = 1 / far - near;
+
+            return matNormalize;
+        }
+        public event PropertyChangedEventHandler PropertyChanged;
+        protected void RaisePropertyChanged(string name)
+        {
+            if (PropertyChanged != null)
+            {
+                PropertyChanged(this, new PropertyChangedEventArgs(name));
+            }
         }
     }
 }

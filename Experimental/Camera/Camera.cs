@@ -15,7 +15,7 @@ namespace Experimental
     public interface Camera : INotifyPropertyChanged
     {
         Projection Projection { get; set; }
-        Matrix4x4 CreateTransformationMatrix();
+        Matrix4x4 CreateViewMatrix();
         bool UseAnimations { get; set; }
         void StartAnimation(string propertyName, CompositionAnimation animation);
         void StopAnimation(string propertyName);

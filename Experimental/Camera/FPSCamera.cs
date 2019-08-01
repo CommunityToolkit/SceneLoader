@@ -17,7 +17,7 @@ using Windows.UI.Xaml.Media;
 
 namespace Experimental
 {
-    public class FPSCamera : Camera
+    public sealed class FPSCamera : Camera
     {
         private Compositor compositor;
 
@@ -27,7 +27,7 @@ namespace Experimental
 
         private CompositionPropertySet propertySet;
 
-        public static bool useExpressionAnimations = false;
+        private bool useExpressionAnimations = false;
        
         public FPSCamera()
         {
@@ -177,7 +177,7 @@ namespace Experimental
         }
         public bool UseAnimations // TODO
         {
-            get => FPSCamera.useExpressionAnimations;
+            get => useExpressionAnimations;
             set
             {
                 if(value != UseAnimations)
@@ -196,7 +196,7 @@ namespace Experimental
                         CreateExpressionAnimations();
                     }
 
-                    FPSCamera.useExpressionAnimations = value;
+                    useExpressionAnimations = value;
                 }
             }
         }
@@ -221,8 +221,9 @@ namespace Experimental
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// PUBLIC FUNCTIONS
         /////////////////////////////////////////////////////////////////////////////////////////////////
-        public Matrix4x4 CreateTransformationMatrix()
+        public Matrix4x4 CreateViewMatrix()
         {
+            Matrix4x4 transformation = Matrix4x4.Identity;
             Matrix4x4 matPos = Matrix4x4.CreateTranslation(-position);
             Matrix4x4 matRoll = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 0, 1), -roll);
             Matrix4x4 matPitch = Matrix4x4.CreateFromAxisAngle(new Vector3(1, 0, 0), -pitch);

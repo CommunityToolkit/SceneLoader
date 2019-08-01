@@ -10,7 +10,7 @@ using Windows.Storage;
 using Windows.UI.Composition.Scenes;
 using Windows.UI.Xaml;
 
-namespace TestViewer
+namespace Experimental
 {
     public enum Stretch { None, Fill, FixX, FixY, Uniform, UniformToFill };
 

@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestViewer
+namespace Experimental
 {
     public abstract class Projection : INotifyPropertyChanged
     {

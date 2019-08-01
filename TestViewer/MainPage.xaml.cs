@@ -13,6 +13,9 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using SceneLoaderComponent;
+using Windows.System;
+using Experimental;
+using Windows.UI.Core;
 
 namespace TestViewer
 {
@@ -24,6 +27,9 @@ namespace TestViewer
         readonly Compositor _compositor;
         readonly SceneVisual _sceneVisual;
 
+        private Viewport _viewport;
+        private OrbitalCamera _orbital_cam;
+        
         public MainPage()
         {
             this.InitializeComponent();
@@ -38,19 +44,46 @@ namespace TestViewer
             _sceneVisual = SceneVisual.Create(_compositor);
             root.Children.InsertAtTop(_sceneVisual);
 
-            _sceneVisual.Offset = new Vector3(300, 300, 0);
-            _sceneVisual.RotationAxis = new Vector3(0, 1, 0);
+            _viewport = new Viewport(_sceneVisual);
+            _orbital_cam = new OrbitalCamera();
+            _viewport.Camera = _orbital_cam;
 
-            var rotationAnimation = _compositor.CreateScalarKeyFrameAnimation();
+            Window.Current.CoreWindow.Dispatcher.AcceleratorKeyActivated += Dispatcher_AcceleratorKeyActivated;
+            Window.Current.SizeChanged += Current_SizeChanged;
+        }
 
-            rotationAnimation.InsertKeyFrame(0, 0, _compositor.CreateLinearEasingFunction());
-            rotationAnimation.InsertKeyFrame(0.5f, 360, _compositor.CreateLinearEasingFunction());
-            rotationAnimation.InsertKeyFrame(1, 0, _compositor.CreateLinearEasingFunction());
+        private void Current_SizeChanged(object sender, WindowSizeChangedEventArgs e)
+        {
+            _viewport.Size = e.Size.ToVector2();
+        }
 
-            rotationAnimation.Duration = TimeSpan.FromSeconds(8);
-            rotationAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
-
-            _sceneVisual.StartAnimation("RotationAngleInDegrees", rotationAnimation);
+        private void Dispatcher_AcceleratorKeyActivated(Windows.UI.Core.CoreDispatcher sender, Windows.UI.Core.AcceleratorKeyEventArgs args)
+        {
+            if (args.EventType == CoreAcceleratorKeyEventType.KeyDown)
+            {
+                VirtualKey pressed = args.VirtualKey;
+                switch (pressed)
+                {
+                    case VirtualKey.W:
+                        _orbital_cam.Latitude += -MathF.PI / 20;
+                        break;
+                    case VirtualKey.S:
+                        _orbital_cam.Latitude += MathF.PI / 20;
+                        break;
+                    case VirtualKey.A:
+                        _orbital_cam.Longitude += -MathF.PI / 20;
+                        break;
+                    case VirtualKey.D:
+                        _orbital_cam.Longitude += MathF.PI / 20;
+                        break;
+                    case VirtualKey.Q:
+                        _orbital_cam.Radius += -50f;
+                        break;
+                    case VirtualKey.E:
+                        _orbital_cam.Radius += 50f;
+                        break;
+                }
+            }
         }
 
         async Task<SceneNode> LoadGLTF(Uri uri)
@@ -62,6 +95,6 @@ namespace TestViewer
             return loader.Load(buffer, _compositor);
         }
 
-        async void Page_Loaded(object sender, RoutedEventArgs e) => _sceneVisual.Root = await LoadGLTF(new Uri("ms-appx:///Assets/DamagedHelmet.gltf"));
+        async void Page_Loaded(object sender, RoutedEventArgs e) => _sceneVisual.Root = await LoadGLTF(new Uri("ms-appx:///Assets/OrientationTest.gltf"));
     }
 }

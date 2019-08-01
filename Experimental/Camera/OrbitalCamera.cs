@@ -10,7 +10,7 @@ using Windows.UI.Composition.Scenes;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Media3D;
 
-namespace TestViewer
+namespace Experimental
 {
     public class OrbitalCamera : Camera
     {
@@ -18,8 +18,8 @@ namespace TestViewer
         private FPSCamera fps_cam;
 
         private Vector3 target; // point in cartesian space the camera is orbiting
-        private float latitude; // vertical offset from equator of the sphere -> beta in babylon
-        private float longitude; // horizontal offset from meridian of the sphere -> alpha in babylon
+        private float latitude; // vertical offset from equator of the sphere
+        private float longitude; // horizontal offset from meridian of the sphere 
         private float radius; // distance from the point the camera is orbiting
 
         private CompositionPropertySet propertySet;
@@ -41,8 +41,6 @@ namespace TestViewer
                 Radius = 600f;
             }
         }
-
-        public event PropertyChangedEventHandler PropertyChanged { add => ((Camera)fps_cam).PropertyChanged += value; remove => ((Camera)fps_cam).PropertyChanged -= value; }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// PUBLIC PROPERTIES
@@ -166,7 +164,6 @@ namespace TestViewer
             get => FPSCamera.useExpressionAnimations;
             set
             {
-                
                 if(UseAnimations != value)
                 {
                     fps_cam.UseAnimations = value;
@@ -205,28 +202,16 @@ namespace TestViewer
                 
             }
         }
-
         public Projection Projection { get => fps_cam.Projection; set => fps_cam.Projection = value; }
+        public event PropertyChangedEventHandler PropertyChanged { add => ((Camera)fps_cam).PropertyChanged += value; remove => ((Camera)fps_cam).PropertyChanged -= value; }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// PUBLIC FUNCTIONS
         /////////////////////////////////////////////////////////////////////////////////////////////////
-        public FPSCamera CreateFPSCamera()
-        {
-            FPSCamera newCam = new FPSCamera();
-            newCam.Position = fps_cam.Position;
-            newCam.Yaw = fps_cam.Yaw;
-            newCam.Pitch = fps_cam.Pitch;
-            newCam.Roll = fps_cam.Roll;
-
-            return newCam;
-        }
-
         public Vector3 GetAbsolutePosition()
         {
             return fps_cam.Position;
         }
-
         public void SetAbsolutePosition(Vector3 value)
         {
             radius = Vector3.Distance(target, value);
@@ -235,21 +220,23 @@ namespace TestViewer
 
             updatePosition();
         }
-
         public CompositionPropertySet GetPropertySet()
         {
             return propertySet;
         }
-
         public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
             propertySet.StartAnimation(propertyName, animation);
+        }
+        public void StopAnimation(string propertyName)
+        {
+            propertySet.StopAnimation(propertyName);
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// PRIVATE FUNCTIONS
         ///////////////////////////////////////////////////////////////////////////////////////////////// 
-        private void updatePosition() // TODO rename
+        private void updatePosition()
         {
             if (!FPSCamera.useExpressionAnimations)
             {
@@ -257,11 +244,7 @@ namespace TestViewer
                 float y = radius * MathF.Cos(latitude);
                 float z = radius * MathF.Sin(latitude) * MathF.Cos(longitude);
 
-                //// we changed our position on a sphere of radius r with center of the origin
-                //// so we must move to the object we are actually orbiting 
                 fps_cam.Position = target + new Vector3(x, -y, z);
-
-                ////// the vector eminating from the camera pointed at the center point 
                 fps_cam.LookDirection = target - fps_cam.Position;
             }
         }
@@ -307,10 +290,11 @@ namespace TestViewer
             fpsCamera.StartAnimation("Pitch", pitchExpression);
 
             // ROLL
-            //var rollExpression = compositor.CreateExpressionAnimation();
-            //rollExpression.Expression = ""; // TODO
-            //rollExpression.SetExpressionReferenceParameter("OrbitalCamera", propertySet);
-            //fpsCamera.StartAnimation("Roll", rollExpression);
+            // TODO
+            var rollExpression = compositor.CreateExpressionAnimation();
+            rollExpression.Expression = "";
+            rollExpression.SetExpressionReferenceParameter("OrbitalCamera", propertySet);
+            fpsCamera.StartAnimation("Roll", rollExpression);
         }
 
         public Matrix4x4 CreateTransformationMatrix()

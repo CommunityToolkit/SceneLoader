@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TestViewer
+namespace Experimental
 {
     public class PerspectiveProjection : Projection
     {
@@ -18,7 +18,7 @@ namespace TestViewer
             yfov = MathF.PI / 2;
         }
 
-        public float xFov
+        public float XFov
         {
             get => xfov;
             set
@@ -27,7 +27,7 @@ namespace TestViewer
                 RaisePropertyChanged("xFov");
             }
         }
-        public float yFov
+        public float YFov
         {
             get => yfov;
             set

@@ -10,7 +10,7 @@ using Windows.UI.Composition.Scenes;
 using Windows.UI.Xaml.Media;
 
 
-namespace TestViewer
+namespace Experimental
 {
     public interface Camera : INotifyPropertyChanged
     {
@@ -18,5 +18,6 @@ namespace TestViewer
         Matrix4x4 CreateTransformationMatrix();
         bool UseAnimations { get; set; }
         void StartAnimation(string propertyName, CompositionAnimation animation);
+        void StopAnimation(string propertyName);
     }
 }

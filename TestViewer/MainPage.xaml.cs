@@ -13,6 +13,8 @@ using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using SceneLoaderComponent;
+using CameraComponent;
+using Windows.ApplicationModel.Appointments.DataProvider;
 
 namespace TestViewer
 {
@@ -23,6 +25,7 @@ namespace TestViewer
     {
         readonly Compositor _compositor;
         readonly SceneVisual _sceneVisual;
+        private Viewport _viewport;
 
         public MainPage()
         {
@@ -41,16 +44,12 @@ namespace TestViewer
             _sceneVisual.Offset = new Vector3(300, 300, 0);
             _sceneVisual.RotationAxis = new Vector3(0, 1, 0);
 
-            var rotationAnimation = _compositor.CreateScalarKeyFrameAnimation();
-
-            rotationAnimation.InsertKeyFrame(0, 0, _compositor.CreateLinearEasingFunction());
-            rotationAnimation.InsertKeyFrame(0.5f, 360, _compositor.CreateLinearEasingFunction());
-            rotationAnimation.InsertKeyFrame(1, 0, _compositor.CreateLinearEasingFunction());
-
-            rotationAnimation.Duration = TimeSpan.FromSeconds(8);
-            rotationAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
-
-            _sceneVisual.StartAnimation("RotationAngleInDegrees", rotationAnimation);
+            _viewport = new Viewport(_sceneVisual);
+            OrbitalCamera camera = new OrbitalCamera();
+            _viewport.Camera = camera;
+            camera.Longitude = MathF.PI / 2f;
+            camera.Latitude = MathF.PI / 2f;
+            camera.Projection = new PerspectiveProjection();
         }
 
         async Task<SceneNode> LoadGLTF(Uri uri)

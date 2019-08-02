@@ -97,7 +97,7 @@ namespace CameraComponent
                 {
 
                     offset = value;
-                    sceneVisual.Offset = offset; // TODO: I dont know what to do here
+                    sceneVisual.Offset = offset; 
                 }
             }
         }

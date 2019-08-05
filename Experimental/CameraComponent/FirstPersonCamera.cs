@@ -38,8 +38,6 @@ namespace CameraComponent
             Roll = 0;
             Position = Vector3.Zero;
             Projection = new PerspectiveProjection();
-
-            useAnimations = false;
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -245,8 +243,8 @@ namespace CameraComponent
             var viewMat = matPos + "*" + matYaw + "*" + matPitch + "*" + matRoll;
 
             var camExpression = compositor.CreateExpressionAnimation();
-            camExpression.SetReferenceParameter("FPCamera", propertySet);
             camExpression.Expression = viewMat;
+            camExpression.SetReferenceParameter("FPCamera", propertySet);
 
             toAnimate.StartAnimation(propertyName, camExpression);
         }

@@ -245,6 +245,7 @@ namespace CameraComponent
             propertySet.InsertScalar("Longitude", Longitude);
             propertySet.InsertScalar("Radius", Radius);
 
+            fp_cam.CreateExpressionAnimation(toAnimate, propertyName);
             CompositionPropertySet fp_camera = fp_cam.GetPropertySet();
 
             // POSITION
@@ -274,10 +275,10 @@ namespace CameraComponent
 
             // ROLL
             // TODO
-            var rollExpression = compositor.CreateExpressionAnimation();
-            rollExpression.Expression = "";
-            rollExpression.SetExpressionReferenceParameter("OrbitalCamera", propertySet);
-            fp_camera.StartAnimation("Roll", rollExpression);
+            //var rollExpression = compositor.CreateExpressionAnimation();
+            //rollExpression.Expression = "";
+            //rollExpression.SetExpressionReferenceParameter("OrbitalCamera", propertySet);
+            //fp_camera.StartAnimation("Roll", rollExpression);
         }
         public CompositionPropertySet GetPropertySet()
         {

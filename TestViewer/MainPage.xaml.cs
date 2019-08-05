@@ -41,15 +41,16 @@ namespace TestViewer
             _sceneVisual = SceneVisual.Create(_compositor);
             root.Children.InsertAtTop(_sceneVisual);
 
-            _sceneVisual.Offset = new Vector3(300, 300, 0);
-            _sceneVisual.RotationAxis = new Vector3(0, 1, 0);
-
             _viewport = new Viewport(_sceneVisual);
             OrbitalCamera camera = new OrbitalCamera();
             _viewport.Camera = camera;
             camera.Longitude = MathF.PI / 2f;
             camera.Latitude = MathF.PI / 2f;
             camera.Projection = new PerspectiveProjection();
+
+            camera.UseAnimations = false;
+
+            
         }
 
         async Task<SceneNode> LoadGLTF(Uri uri)

@@ -230,75 +230,123 @@ namespace CameraComponent
             float stretch;
             propertySet.TryGetScalar("Stretch", out stretch);
 
-            switch (stretch)
-            {
-                case 0f: // Fill
-                    stretchMat = "Matrix4x4(" +
-                        "Viewport.Size.X, 0, 0, 0, " +
-                        "0, Viewport.Size.Y, 0, 0, " +
-                        "0, 0, (Viewport.Size.X + Viewport.Size.Y) / 2f, 0, " +
-                        "0, 0, 0, 1)";
-                    break;
-                case 1f: // FixX
-                    stretchMat = "Matrix4x4(" +
-                        "Viewport.Size.X, 0, 0, 0, " +
-                        "0, Viewport.Size.X, 0, 0, " +
-                        "0, 0, Viewport.Size.X, 0, " +
-                        "0, 0, 0, 1)";
-                    break;
-                case 2f: // FixY
-                    stretchMat = "Matrix4x4(" +
-                        "Viewport.Size.Y, 0, 0, 0, " +
-                        "0, Viewport.Size.Y, 0, 0, " +
-                        "0, 0, Viewport.Size.Y, 0, " +
-                        "0, 0, 0, 1)";
-                    break; 
-                case 3f:
-                    Vector2 uniform_size;
-                    propertySet.TryGetVector2("Size", out uniform_size);
+            stretchMat = "(Viewport.Stretch == 0f)?" +
+                            "Matrix4x4(" +
+                            "Viewport.Size.X, 0, 0, 0, " +
+                            "0, Viewport.Size.Y, 0, 0, " +
+                            "0, 0, (Viewport.Size.X + Viewport.Size.Y) / 2f, 0, " +
+                            "0, 0, 0, 1) " +
+                        ":" +
+                        "(Viewport.Stretch == 1f)? " +
+                            "Matrix4x4(" +
+                            "Viewport.Size.X, 0, 0, 0, " +
+                            "0, Viewport.Size.X, 0, 0, " +
+                            "0, 0, Viewport.Size.X, 0, " +
+                            "0, 0, 0, 1)" +
+                        ":" +
+                        "(Viewport.Stretch == 2f)? " + 
+                            "Matrix4x4(" +
+                            "Viewport.Size.Y, 0, 0, 0, " +
+                            "0, Viewport.Size.Y, 0, 0, " +
+                            "0, 0, Viewport.Size.Y, 0, " +
+                            "0, 0, 0, 1)" + 
+                        ":" +
+                        "(Viewport.Stretch == 3f)? " +
+                            "(Viewport.Size.X >= Viewport.Size.Y)? " +
+                                "Matrix4x4(" +
+                                "Viewport.Size.Y, 0, 0, 0, " +
+                                "0, Viewport.Size.Y, 0, 0, " +
+                                "0, 0, Viewport.Size.Y, 0, " +
+                                "0, 0, 0, 1) " +
+                                ":" +
+                                "Matrix4x4(" +
+                                "Viewport.Size.X, 0, 0, 0, " +
+                                "0, Viewport.Size.X, 0, 0, " +
+                                "0, 0, Viewport.Size.X, 0, " +
+                                "0, 0, 0, 1)" +
+                        ":" +
+                            "(Viewport.Size.X < Viewport.Size.Y)? " +
+                                "Matrix4x4(" +
+                                "Viewport.Size.Y, 0, 0, 0, " +
+                                "0, Viewport.Size.Y, 0, 0, " +
+                                "0, 0, Viewport.Size.Y, 0, " +
+                                "0, 0, 0, 1) " +
+                                ":" +
+                                "Matrix4x4(" +
+                                "Viewport.Size.X, 0, 0, 0, " +
+                                "0, Viewport.Size.X, 0, 0, " +
+                                "0, 0, Viewport.Size.X, 0, " +
+                                "0, 0, 0, 1)";
 
-                    if (uniform_size.X >= uniform_size.Y)
-                    {
-                        stretchMat = "Matrix4x4(" +
-                        "Viewport.Size.Y, 0, 0, 0, " +
-                        "0, Viewport.Size.Y, 0, 0, " +
-                        "0, 0, Viewport.Size.Y, 0, " +
-                        "0, 0, 0, 1)";
-                    }
-                    else
-                    {
-                        stretchMat = "Matrix4x4(" +
-                        "Viewport.Size.X, 0, 0, 0, " +
-                        "0, Viewport.Size.X, 0, 0, " +
-                        "0, 0, Viewport.Size.X, 0, " +
-                        "0, 0, 0, 1)";
-                    }
-                    break;
-                case 4f:
-                    Vector2 uniform_to_fill_size;
-                    propertySet.TryGetVector2("Size", out uniform_to_fill_size);
+            //switch (stretch)
+            //{
+            //    case 0f: // Fill
+            //        stretchMat = "Matrix4x4(" +
+            //            "Viewport.Size.X, 0, 0, 0, " +
+            //            "0, Viewport.Size.Y, 0, 0, " +
+            //            "0, 0, (Viewport.Size.X + Viewport.Size.Y) / 2f, 0, " +
+            //            "0, 0, 0, 1)";
+            //        break;
+            //    case 1f: // FixX
+            //        stretchMat = "Matrix4x4(" +
+            //            "Viewport.Size.X, 0, 0, 0, " +
+            //            "0, Viewport.Size.X, 0, 0, " +
+            //            "0, 0, Viewport.Size.X, 0, " +
+            //            "0, 0, 0, 1)";
+            //        break;
+            //    case 2f: // FixY
+            //        stretchMat = "Matrix4x4(" +
+            //            "Viewport.Size.Y, 0, 0, 0, " +
+            //            "0, Viewport.Size.Y, 0, 0, " +
+            //            "0, 0, Viewport.Size.Y, 0, " +
+            //            "0, 0, 0, 1)";
+            //        break; 
+            //    case 3f:
+            //        Vector2 uniform_size;
+            //        propertySet.TryGetVector2("Size", out uniform_size);
 
-                    if (size.X >= size.Y)
-                    {
-                        stretchMat = "Matrix4x4(" +
-                        "Viewport.Size.X, 0, 0, 0, " +
-                        "0, Viewport.Size.X, 0, 0, " +
-                        "0, 0, Viewport.Size.X, 0, " +
-                        "0, 0, 0, 1)";
-                    }
-                    else
-                    {
-                        stretchMat = "Matrix4x4(" +
-                        "Viewport.Size.Y, 0, 0, 0, " +
-                        "0, Viewport.Size.Y, 0, 0, " +
-                        "0, 0, Viewport.Size.Y, 0, " +
-                        "0, 0, 0, 1)";
-                    }
-                    break;
-                default:
-                    stretchMat = "";
-                    break;
-            }
+            //        if (uniform_size.X >= uniform_size.Y)
+            //        {
+            //            stretchMat = "Matrix4x4(" +
+            //            "Viewport.Size.Y, 0, 0, 0, " +
+            //            "0, Viewport.Size.Y, 0, 0, " +
+            //            "0, 0, Viewport.Size.Y, 0, " +
+            //            "0, 0, 0, 1)";
+            //        }
+            //        else
+            //        {
+            //            stretchMat = "Matrix4x4(" +
+            //            "Viewport.Size.X, 0, 0, 0, " +
+            //            "0, Viewport.Size.X, 0, 0, " +
+            //            "0, 0, Viewport.Size.X, 0, " +
+            //            "0, 0, 0, 1)";
+            //        }
+            //        break;
+            //    case 4f:
+            //        Vector2 uniform_to_fill_size;
+            //        propertySet.TryGetVector2("Size", out uniform_to_fill_size);
+
+            //        if (size.X >= size.Y)
+            //        {
+            //            stretchMat = "Matrix4x4(" +
+            //            "Viewport.Size.X, 0, 0, 0, " +
+            //            "0, Viewport.Size.X, 0, 0, " +
+            //            "0, 0, Viewport.Size.X, 0, " +
+            //            "0, 0, 0, 1)";
+            //        }
+            //        else
+            //        {
+            //            stretchMat = "Matrix4x4(" +
+            //            "Viewport.Size.Y, 0, 0, 0, " +
+            //            "0, Viewport.Size.Y, 0, 0, " +
+            //            "0, 0, Viewport.Size.Y, 0, " +
+            //            "0, 0, 0, 1)";
+            //        }
+            //        break;
+            //    default:
+            //        stretchMat = "";
+            //        break;
+            //}
             
             var stretchExpression = Window.Current.Compositor.CreateExpressionAnimation();
             stretchExpression.Expression = stretchMat;

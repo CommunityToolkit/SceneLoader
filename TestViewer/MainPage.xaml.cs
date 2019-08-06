@@ -18,6 +18,7 @@ using Windows.ApplicationModel.Appointments.DataProvider;
 using Windows.UI;
 using Windows.UI.Core;
 using Windows.System;
+using System.Diagnostics;
 
 namespace TestViewer
 {
@@ -27,8 +28,6 @@ namespace TestViewer
     public sealed partial class MainPage : Page
     {
         readonly Compositor _compositor;
-        readonly SceneVisual _sceneVisual;
-        private Viewport _viewport;
 
         readonly SceneVisual _sceneVisual1;
         readonly SceneVisual _sceneVisual2;
@@ -41,6 +40,11 @@ namespace TestViewer
         private Vector2 mouseDownLocation;
         private bool mouseDowned = false;
 
+        private ScalarKeyFrameAnimation latitudeAnimation;
+        private ScalarKeyFrameAnimation longitudeAnimation;
+        private ScalarKeyFrameAnimation radiusAnimation;
+        private ScalarKeyFrameAnimation projectionAnimation;
+
         public MainPage()
         {
             this.InitializeComponent();
@@ -50,7 +54,7 @@ namespace TestViewer
             var root = _compositor.CreateContainerVisual();
 
             root.Size = new Vector2(1000, 1000);
-            ElementCompositionPreview.SetElementChildVisual(this, root);
+            ElementCompositionPreview.SetElementChildVisual(ModelHost, root);
 
             // Should the sprite visual sizes change with screen size change?
             v1 = _compositor.CreateSpriteVisual();
@@ -86,6 +90,8 @@ namespace TestViewer
             cam2 = new OrbitalCamera();
             _viewport2.Camera = cam2;
             _viewport2.Size = _sceneVisual2.Size;
+
+            _viewport1.Camera.UseAnimations = true;
 
             // Keyboard Handler
             Window.Current.CoreWindow.Dispatcher.AcceleratorKeyActivated += Dispatcher_AcceleratorKeyActivated;
@@ -168,8 +174,10 @@ namespace TestViewer
                 float longitudeDelta = newPos.X - mouseDownLocation.X;
                 float latitudeDelta = newPos.Y - mouseDownLocation.Y;
 
+                mouseDownLocation = newPos;
+
                 // higher number corresponds to faster rotation
-                float sensitivity = 0.0002f;
+                float sensitivity = 0.005f;
 
                 // changes camera's latitude and longitude based on the sensitivity and size of mouse movement
                 cam1.Longitude -= sensitivity * longitudeDelta;
@@ -244,6 +252,83 @@ namespace TestViewer
         {
             _sceneVisual1.Root = await LoadGLTF(new Uri("ms-appx:///Assets/OrientationTest.gltf"));
             _sceneVisual2.Root = await LoadGLTF(new Uri("ms-appx:///Assets/OrientationTest.gltf"));
+        }
+
+        private void LatitudeAnimation_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if(LatitudeAnimation.IsEnabled)
+            {
+                Debug.Assert(latitudeAnimation == null);
+                latitudeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                latitudeAnimation.InsertKeyFrame(0, MathF.PI / 6);
+                latitudeAnimation.InsertKeyFrame(.5f, 5 * MathF.PI / 6);
+                latitudeAnimation.InsertKeyFrame(1, MathF.PI / 6);
+                latitudeAnimation.Duration = TimeSpan.FromSeconds(5);
+                latitudeAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
+                cam1.StartAnimation("Latitude", latitudeAnimation);
+            }
+            else
+            {
+                Debug.Assert(latitudeAnimation != null);
+                cam1.StopAnimation("Latitude");
+                latitudeAnimation = null;
+            }
+        }
+
+        private void LongitudeAnimation_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (LongitudeAnimation.IsEnabled)
+            {
+                Debug.Assert(latitudeAnimation == null);
+                longitudeAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                longitudeAnimation.InsertKeyFrame(0, 0, _compositor.CreateLinearEasingFunction());
+                longitudeAnimation.InsertKeyFrame(1, MathF.PI * 2, _compositor.CreateLinearEasingFunction());
+                longitudeAnimation.Duration = TimeSpan.FromSeconds(8);
+                longitudeAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
+                cam1.StartAnimation("Longitude", longitudeAnimation);
+            }
+            else
+            {
+                Debug.Assert(longitudeAnimation != null);
+                cam1.StopAnimation("Longitude");
+                longitudeAnimation = null;
+            }
+        }
+
+        private void RadiusAnimation_IsEnabledChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (LatitudeAnimation.IsEnabled)
+            {
+                Debug.Assert(radiusAnimation == null);
+                radiusAnimation = _compositor.CreateScalarKeyFrameAnimation();
+                radiusAnimation.InsertKeyFrame(0, 500);
+                radiusAnimation.InsertKeyFrame(.5f, 1000);
+                radiusAnimation.InsertKeyFrame(1, 500);
+                radiusAnimation.Duration = TimeSpan.FromSeconds(5);
+                radiusAnimation.IterationBehavior = AnimationIterationBehavior.Forever;
+                cam1.StartAnimation("Radius", radiusAnimation);
+            }
+            else
+            {
+                Debug.Assert(radiusAnimation != null);
+                cam1.StopAnimation("Radius");
+                radiusAnimation = null;
+            }
+        }
+
+        private void Projection_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
+        }
+
+        private void FOV_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
+        {
+            Projection projeciton = cam1.Projection;
+        }
+
+        private void Stretch_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+
         }
     }
 }

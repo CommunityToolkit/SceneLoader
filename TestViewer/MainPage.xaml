@@ -8,8 +8,27 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
     Loaded="Page_Loaded">
-
     <Grid>
-
+        <Grid x:Name="ModelHost"/>
+        <StackPanel>
+            <ToggleSwitch x:Name="LatitudeAnimation"  IsEnabledChanged="LatitudeAnimation_IsEnabledChanged">Latitude Animation</ToggleSwitch>
+            <ToggleSwitch x:Name="LongitudeAnimation" IsEnabledChanged="LongitudeAnimation_IsEnabledChanged">Longitude Animation</ToggleSwitch>
+            <ToggleSwitch x:Name="RadiusAnimation" IsEnabledChanged="RadiusAnimation_IsEnabledChanged">Radius Animation</ToggleSwitch>
+            <ComboBox x:Name="Projection" SelectionChanged="Projection_SelectionChanged">
+                <ComboBoxItem IsSelected="True">Perspective</ComboBoxItem>
+                <ComboBoxItem>Orthographic</ComboBoxItem>
+            </ComboBox>
+            <StackPanel>
+                <TextBlock Text="Field of View:  "/>
+                <Slider x:Name="FOVSlider" ValueChanged="FOV_ValueChanged" Minimum="20" Maximum="170" Value="90" Width="100" HorizontalAlignment="Left"/>
+            </StackPanel>
+            <ComboBox x:Name="Stretch" SelectionChanged="Stretch_SelectionChanged">
+                <ComboBoxItem>Fill</ComboBoxItem>
+                <ComboBoxItem>Fixed X FOV</ComboBoxItem>
+                <ComboBoxItem>Fixed Y FOV</ComboBoxItem>
+                <ComboBoxItem IsSelected="True">Uniform</ComboBoxItem>
+                <ComboBoxItem>Uniform To Fit</ComboBoxItem>
+            </ComboBox>
+        </StackPanel>
     </Grid>
 </Page>

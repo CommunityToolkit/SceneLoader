@@ -73,7 +73,8 @@ namespace CameraComponent
                 if(UseAnimations)
                 {
                     float curr = 0.0f;
-                    return (propertySet.TryGetScalar("Radius", out curr) == CompositionGetValueStatus.Succeeded) ? curr : radius;
+                    float ret = (propertySet.TryGetScalar("Radius", out curr) == CompositionGetValueStatus.Succeeded) ? curr : radius;
+                    return MathF.Max(200, ret);
                 }
                 else
                 {

@@ -473,5 +473,4 @@ namespace TestViewer
             _viewport1.Stretch = CameraComponent.Stretch.Uniform;
         }
     }
-
 }

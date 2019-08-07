@@ -109,7 +109,7 @@ namespace CameraComponent
                 stretch = value;
                 if (camera.UseAnimations)
                 {
-                    propertySet.StartAnimation("StretchMatrix", this.CreateStretchExpressionMatrix());
+                    propertySet.InsertScalar("Stretch", (float)stretch);
                 }
                 else
                 {

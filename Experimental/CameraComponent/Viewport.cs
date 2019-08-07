@@ -109,7 +109,7 @@ namespace CameraComponent
                 stretch = value;
                 if (camera.UseAnimations)
                 {
-                    propertySet.InsertMatrix4x4("StretchMatrix", this.CreateStretchMatrix());
+                    propertySet.StartAnimation("StretchMatrix", this.CreateStretchExpressionMatrix());
                 }
                 else
                 {
@@ -372,7 +372,7 @@ namespace CameraComponent
             {
                 if(e.PropertyName == "Projection" || e.PropertyName == "xFov" || e.PropertyName == "yFov")
                 {
-                    propertySet.InsertMatrix4x4("NormalizingMatrix", camera.Projection.CreateNormalizingMatrix());
+                    camera.Projection.CreateExpressionAnimation(propertySet, "NormalizingMatrix");
                 }
                 else
                 {

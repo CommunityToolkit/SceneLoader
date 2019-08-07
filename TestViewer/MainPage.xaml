@@ -11,22 +11,23 @@
     <Grid>
         <Grid x:Name="ModelHost"/>
         <StackPanel>
+            <Button Click="Home">Home</Button>
             <ToggleButton x:Name="LatitudeAnimation" Checked="LatitudeAnimation_Checked" Unchecked="LatitudeAnimation_Unchecked">Latitude Animation</ToggleButton>
             <ToggleButton x:Name="LongitudeAnimation" Checked="LongitudeAnimation_Checked" Unchecked="LongitudeAnimation_Unchecked">Longitude Animation</ToggleButton>
             <ToggleButton x:Name="RadiusAnimation"  Checked="RadiusAnimation_Checked" Unchecked="RadiusAnimation_Unchecked">Radius Animation</ToggleButton>
             <ComboBox x:Name="Projection" SelectionChanged="Projection_SelectionChanged">
-                <ComboBoxItem IsSelected="True">Perspective</ComboBoxItem>
+                <ComboBoxItem IsSelected="True" x:Name="PerspectiveProjection">Perspective</ComboBoxItem>
                 <ComboBoxItem>Orthographic</ComboBoxItem>
             </ComboBox>
-            <StackPanel>
+            <!--<StackPanel>
                 <TextBlock Text="Field of View:  "/>
                 <Slider x:Name="FOVSlider" ValueChanged="FOV_ValueChanged" Minimum="20" Maximum="170" Value="90" Width="100" HorizontalAlignment="Left"/>
-            </StackPanel>
+            </StackPanel>-->
             <ComboBox x:Name="Stretch" SelectionChanged="Stretch_SelectionChanged">
                 <ComboBoxItem>Fill</ComboBoxItem>
                 <ComboBoxItem>Fixed X FOV</ComboBoxItem>
                 <ComboBoxItem>Fixed Y FOV</ComboBoxItem>
-                <ComboBoxItem IsSelected="True">Uniform</ComboBoxItem>
+                <ComboBoxItem IsSelected="True" x:Name="UniformStretch">Uniform</ComboBoxItem>
                 <ComboBoxItem>Uniform To Fill</ComboBoxItem>
             </ComboBox>
         </StackPanel>

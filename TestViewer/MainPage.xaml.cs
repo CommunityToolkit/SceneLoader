@@ -93,6 +93,8 @@ namespace TestViewer
 
             _viewport1.Camera.UseAnimations = true;
 
+            Home(null, null);
+
             // Keyboard Handler
             Window.Current.CoreWindow.Dispatcher.AcceleratorKeyActivated += Dispatcher_AcceleratorKeyActivated;
             // Pointer Handler
@@ -365,12 +367,12 @@ namespace TestViewer
 
         private void FOV_ValueChanged(object sender, Windows.UI.Xaml.Controls.Primitives.RangeBaseValueChangedEventArgs e)
         {
-            if(cam1 != null && cam1.Projection is PerspectiveProjection)
-            {
-                float fov = (float) FOVSlider.Value / 360 * MathF.PI * 2;
-                ((PerspectiveProjection)cam1.Projection).XFov = fov;
-                ((PerspectiveProjection)cam1.Projection).YFov = fov;
-            }
+            //if(cam1 != null && cam1.Projection is PerspectiveProjection)
+            //{
+            //    float fov = (float) FOVSlider.Value / 360 * MathF.PI * 2;
+            //    ((PerspectiveProjection)cam1.Projection).XFov = fov;
+            //    ((PerspectiveProjection)cam1.Projection).YFov = fov;
+            //}
         }
 
         private void Stretch_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -396,6 +398,22 @@ namespace TestViewer
             {
                 _viewport1.Stretch = CameraComponent.Stretch.UniformToFill;
             }
+        }
+
+        private void Home(object sender, RoutedEventArgs e)
+        {
+            LongitudeAnimation.IsChecked = false;
+            LatitudeAnimation.IsChecked = false;
+            RadiusAnimation.IsChecked = false;
+
+            UniformStretch.IsSelected = true;
+            PerspectiveProjection.IsSelected = true;
+
+            cam1.Latitude = MathF.PI / 3;
+            cam1.Longitude = MathF.PI / 3;
+            cam1.Radius = 800;
+            cam1.Projection = new PerspectiveProjection();
+            _viewport1.Stretch = CameraComponent.Stretch.Uniform;
         }
     }
 }

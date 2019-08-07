@@ -55,14 +55,15 @@ namespace TestViewer
             // Should the sprite visual sizes change with screen size change?
             v1 = _compositor.CreateSpriteVisual();
             v1.Size = new Vector2((2f / 3f) * (float)Window.Current.Bounds.Width, (float)Window.Current.Bounds.Height);
-            v1.Offset = new Vector3(0, 0, -100);
+            v1.Offset = new Vector3(0, 0, 0);
             v1.Brush = _compositor.CreateColorBrush(Colors.SeaGreen);
             root.Children.InsertAtTop(v1);
 
             v2 = _compositor.CreateSpriteVisual();
             v2.Size = new Vector2((1f / 3f) * (float)Window.Current.Bounds.Width, (float)Window.Current.Bounds.Height);
-            v2.Offset = new Vector3(v1.Size.X, 0, -100);
+            v2.Offset = new Vector3(v1.Size.X, 0, 0);
             v2.Brush = _compositor.CreateColorBrush(Colors.Black);
+            v2.Clip = _compositor.CreateInsetClip();
             root.Children.InsertAtTop(v2);
             //root.Children.InsertBelow(v2, v1);
 
@@ -74,7 +75,6 @@ namespace TestViewer
             _viewport1 = new Viewport(_sceneVisual1);
             cam1 = new OrbitalCamera();
             _viewport1.Camera = cam1;
-            cam1.Latitude = MathF.PI / 2;
             _viewport1.Size = _sceneVisual1.Size;
 
             // scene visual
@@ -86,6 +86,21 @@ namespace TestViewer
             cam2 = new OrbitalCamera();
             _viewport2.Camera = cam2;
             _viewport2.Size = _sceneVisual2.Size;
+
+            cam1.UseAnimations = cam2.UseAnimations = true;
+
+            // inital positions for cameras
+            cam1.Latitude = MathF.PI / 2;
+            cam2.Latitude = MathF.PI / 4;
+            cam2.Longitude = MathF.PI / 4;
+            cam2.Radius += 700;
+
+            
+
+
+
+
+
 
             // Keyboard Handler
             Window.Current.CoreWindow.Dispatcher.AcceleratorKeyActivated += Dispatcher_AcceleratorKeyActivated;
@@ -243,7 +258,48 @@ namespace TestViewer
         async void Page_Loaded(object sender, RoutedEventArgs e)
         {
             _sceneVisual1.Root = await LoadGLTF(new Uri("ms-appx:///Assets/OrientationTest.gltf"));
-            _sceneVisual2.Root = await LoadGLTF(new Uri("ms-appx:///Assets/OrientationTest.gltf"));
+            _sceneVisual2.Root = SceneNode.Create(_compositor);
+            SceneNode orientateModel = await LoadGLTF(new Uri("ms-appx:///Assets/OrientationTest.gltf"));
+            SceneNode camModel = await LoadGLTF(new Uri("ms-appx:///Assets/cam.gltf"));
+            camModel.Transform.Scale *= 3*orientateModel.Transform.Scale;
+            _sceneVisual2.Root.Children.Insert(0, orientateModel);
+
+            SceneNode yawNode = SceneNode.Create(_compositor);
+            SceneNode pitchNode = SceneNode.Create(_compositor);
+            SceneNode posNode = SceneNode.Create(_compositor);
+
+            _sceneVisual2.Root.Children.Insert(1, posNode);
+            posNode.Children.Insert(0, pitchNode);
+            pitchNode.Children.Insert(0, yawNode);
+            yawNode.Children.Insert(0, camModel);
+
+            //_sceneVisual2.Root.Children.Insert(1, camModel);
+
+
+            //camModel.Transform.Translation = new Vector3(0, 0, 500);
+            camModel.Transform.RotationAxis = new Vector3(0, 1, 0);
+            camModel.Transform.RotationAngle = MathF.PI / 2;
+
+            // set up animation
+            var fp_cam1PropertySet = cam1.GetCartesianPropertySet();
+
+            var yawExpression = _compositor.CreateExpressionAnimation();
+            yawExpression.Expression = "FPCam1.Yaw";
+            yawExpression.SetReferenceParameter("FPCam1", fp_cam1PropertySet);
+            yawNode.Transform.RotationAxis = new Vector3(0, 1, 0);
+            yawNode.Transform.StartAnimation("RotationAngle", yawExpression);
+
+            var pitchExpression = _compositor.CreateExpressionAnimation();
+            pitchExpression.Expression = "-FPCam1.Pitch";
+            pitchExpression.SetReferenceParameter("FPCam1", fp_cam1PropertySet);
+            pitchNode.Transform.RotationAxis = new Vector3(1, 0, 0);
+            pitchNode.Transform.StartAnimation("RotationAngle", pitchExpression);
+
+
+            var posExpression = _compositor.CreateExpressionAnimation();
+            posExpression.Expression = "Vector3(FPCam1.Position.X, -FPCam1.Position.Y, FPCam1.Position.Z)";
+            posExpression.SetReferenceParameter("FPCam1", fp_cam1PropertySet);
+            posNode.Transform.StartAnimation("Translation", posExpression);
         }
     }
 }

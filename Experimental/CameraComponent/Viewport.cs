@@ -107,7 +107,14 @@ namespace CameraComponent
             set
             {
                 stretch = value;
-                CreateCameraMatrix();
+                if (camera.UseAnimations)
+                {
+                    propertySet.StartAnimation("StretchMatrix", this.CreateStretchExpressionMatrix());
+                }
+                else
+                {
+                    CreateCameraMatrix();
+                }
             }
         }
         public Camera Camera
@@ -363,7 +370,14 @@ namespace CameraComponent
             }
             else
             {
-                this.CreateExpressionAnimation();
+                if(e.PropertyName == "Projection" || e.PropertyName == "xFov" || e.PropertyName == "yFov")
+                {
+                    camera.Projection.CreateExpressionAnimation(propertySet, "NormalizingMatrix");
+                }
+                else
+                {
+                    this.CreateExpressionAnimation();
+                }
             }
         }
     }

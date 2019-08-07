@@ -72,7 +72,7 @@ namespace CameraComponent
                 "Matrix4x4(" +
                 "1 / OrthoProj.Width, 0, 0, 0, " +
                 "0, 1 / OrthoProj.Height, 0, 0, " +
-                "0, 0, 1 / OrthoProj.Far - OrthoProj.Near, 0, " +
+                "0, 0, 1 / (OrthoProj.Far - OrthoProj.Near), 0, " +
                 "0, 0, 0, 1)";
 
             var projExpression = Window.Current.Compositor.CreateExpressionAnimation();

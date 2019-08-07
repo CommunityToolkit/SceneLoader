@@ -11,9 +11,9 @@
     <Grid>
         <Grid x:Name="ModelHost"/>
         <StackPanel>
-            <ToggleSwitch x:Name="LatitudeAnimation"  IsEnabledChanged="LatitudeAnimation_IsEnabledChanged">Latitude Animation</ToggleSwitch>
-            <ToggleSwitch x:Name="LongitudeAnimation" IsEnabledChanged="LongitudeAnimation_IsEnabledChanged">Longitude Animation</ToggleSwitch>
-            <ToggleSwitch x:Name="RadiusAnimation" IsEnabledChanged="RadiusAnimation_IsEnabledChanged">Radius Animation</ToggleSwitch>
+            <ToggleButton x:Name="LatitudeAnimation" Checked="LatitudeAnimation_Checked" Unchecked="LatitudeAnimation_Unchecked">Latitude Animation</ToggleButton>
+            <ToggleButton x:Name="LongitudeAnimation" Checked="LongitudeAnimation_Checked" Unchecked="LongitudeAnimation_Unchecked">Longitude Animation</ToggleButton>
+            <ToggleButton x:Name="RadiusAnimation"  Checked="RadiusAnimation_Checked" Unchecked="RadiusAnimation_Unchecked">Radius Animation</ToggleButton>
             <ComboBox x:Name="Projection" SelectionChanged="Projection_SelectionChanged">
                 <ComboBoxItem IsSelected="True">Perspective</ComboBoxItem>
                 <ComboBoxItem>Orthographic</ComboBoxItem>
@@ -27,7 +27,7 @@
                 <ComboBoxItem>Fixed X FOV</ComboBoxItem>
                 <ComboBoxItem>Fixed Y FOV</ComboBoxItem>
                 <ComboBoxItem IsSelected="True">Uniform</ComboBoxItem>
-                <ComboBoxItem>Uniform To Fit</ComboBoxItem>
+                <ComboBoxItem>Uniform To Fill</ComboBoxItem>
             </ComboBox>
         </StackPanel>
     </Grid>

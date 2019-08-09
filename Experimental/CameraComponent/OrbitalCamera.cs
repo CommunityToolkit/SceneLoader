@@ -1,7 +1,10 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Numerics;
 using Windows.UI.Composition;
-using Windows.UI.Xaml;
 
 namespace CameraComponent
 {
@@ -11,10 +14,15 @@ namespace CameraComponent
         private FirstPersonCamera _fpCam;
         private CompositionPropertySet _propertySet;
 
-        public OrbitalCamera()
+        public OrbitalCamera(Compositor compositor)
         {
-            _compositor = Window.Current.Compositor;
-            _fpCam = new FirstPersonCamera();
+            if (compositor == null)
+            {
+                throw new System.ArgumentException("Compositor cannot be null");
+            }
+
+            _compositor = compositor;
+            _fpCam = new FirstPersonCamera(_compositor);
             _propertySet = _compositor.CreatePropertySet();
 
             // Create the properties for the camera
@@ -116,11 +124,13 @@ namespace CameraComponent
             Latitude = MathF.Atan2(value.Z, value.Y);
         }
 
+        // returns the matrix created from the camera's position and rotation
         public Matrix4x4 GetViewMatrix()
         {
             return _fpCam.GetViewMatrix();
         }
 
+        // Returns the product of the camera's view matrix and the projection matrix
         public Matrix4x4 GetModelViewProjectionMatrix()
         {
             Matrix4x4 matMVP = Matrix4x4.Identity;

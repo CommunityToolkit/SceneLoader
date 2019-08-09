@@ -1,7 +1,10 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Numerics;
 using Windows.UI.Composition;
-using Windows.UI.Xaml;
 
 namespace CameraComponent
 {
@@ -11,9 +14,14 @@ namespace CameraComponent
         private Projection _projection;
         private CompositionPropertySet _propertySet;
                
-        public FirstPersonCamera()
+        public FirstPersonCamera(Compositor compositor)
         {
-            _compositor = Window.Current.Compositor;
+            if (compositor == null)
+            {
+                throw new System.ArgumentException("Compositor cannot be null");
+            }
+
+            _compositor = compositor;
 
             // Create the properties for the camera
             _propertySet = _compositor.CreatePropertySet();
@@ -24,7 +32,7 @@ namespace CameraComponent
             _propertySet.InsertMatrix4x4("ModelViewProjectionMatrix", Matrix4x4.Identity);
 
             // Default is an orthographic projection
-            Projection = new OrthographicProjection();
+            Projection = new OrthographicProjection(_compositor);
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
@@ -110,7 +118,7 @@ namespace CameraComponent
                 var modelViewProjMatExpression = _compositor.CreateExpressionAnimation();
                 if (_projection == null) // if null then the default is an orthographic projection
                 {
-                    OrthographicProjection defaultProj = new OrthographicProjection();
+                    OrthographicProjection defaultProj = new OrthographicProjection(_compositor);
                     modelViewProjMatExpression.Expression = viewMat + "*" + "DefaultProjection.ProjectionMatrix";
                     modelViewProjMatExpression.SetReferenceParameter("FPCamera", _propertySet);
                     modelViewProjMatExpression.SetReferenceParameter("DefaultProjection", Projection.GetPropertySet());
@@ -143,6 +151,7 @@ namespace CameraComponent
             Pitch = MathF.Asin(direction.Y);
         }
 
+        // returns the matrix created from the camera's position and rotation
         public Matrix4x4 GetViewMatrix()
         {
             // create view matrix based on the camera's rotation and position
@@ -154,6 +163,7 @@ namespace CameraComponent
            return matPos * matYaw * matPitch * matRoll;            
         }
 
+        // Returns the product of the camera's view matrix and the projection matrix
         public Matrix4x4 GetModelViewProjectionMatrix()
         {
             Matrix4x4 matMVP = Matrix4x4.Identity;
@@ -163,7 +173,8 @@ namespace CameraComponent
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// ANIMATION FUNCTIONS
-        /////////////////////////////////////////////////////////////////////////////////////////////////         
+        /////////////////////////////////////////////////////////////////////////////////////////////////   
+        
         public CompositionPropertySet GetPropertySet()
         {
             return _propertySet;

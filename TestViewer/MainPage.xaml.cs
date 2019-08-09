@@ -40,8 +40,9 @@ namespace TestViewer
             root.Children.InsertAtTop(_sceneVisual);
 
             // instantiate a viewport and a camera
-            _viewport = new Viewport(_sceneVisual);
-            OrbitalCamera camera = new OrbitalCamera();
+            _viewport = new Viewport(_compositor);
+            _viewport.AttachToVisual(_sceneVisual);
+            OrbitalCamera camera = new OrbitalCamera(_compositor);
             _viewport.Camera = camera;
 
             // set the viewport's size to the size of the window
@@ -50,12 +51,9 @@ namespace TestViewer
             // change the camera's properties 
             camera.Longitude = MathF.PI / 2f;
             camera.Latitude = MathF.PI / 2f;
-            camera.Projection = new PerspectiveProjection();
-
-            // add animations to the camera
-
-
-            // add event handlers for window size and user input
+            camera.Projection = new PerspectiveProjection(_compositor);
+                       
+            // add event handler for window size change
             Window.Current.CoreWindow.SizeChanged += CoreWindow_SizeChanged;
         }
 

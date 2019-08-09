@@ -123,6 +123,7 @@
   <ItemGroup>
     <Compile Include="Camera.cs" />
     <Compile Include="FirstPersonCamera.cs" />
+    <Compile Include="Animatable.cs" />
     <Compile Include="OrbitalCamera.cs" />
     <Compile Include="OrthographicProjection.cs" />
     <Compile Include="PerspectiveProjection.cs" />

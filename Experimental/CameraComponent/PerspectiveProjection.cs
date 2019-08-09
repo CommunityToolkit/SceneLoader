@@ -1,7 +1,10 @@
-﻿using System;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System;
 using System.Numerics;
 using Windows.UI.Composition;
-using Windows.UI.Xaml;
 
 namespace CameraComponent
 {
@@ -10,9 +13,14 @@ namespace CameraComponent
         private Compositor _compositor;
         private CompositionPropertySet _propertySet;
 
-        public PerspectiveProjection()
+        public PerspectiveProjection(Compositor compositor)
         {
-            _compositor = Window.Current.Compositor;
+            if (compositor == null)
+            {
+                throw new System.ArgumentException("Compositor cannot be null");
+            }
+
+            _compositor = compositor;
             _propertySet = _compositor.CreatePropertySet();
 
             // Create the properties for the projection
@@ -93,6 +101,7 @@ namespace CameraComponent
         /// PUBLIC FUNCTIONS
         ///////////////////////////////////////////////////////////////////////////////////////////////// 
         
+        // Returns the Matrix created from the distance to the near and far planes and the projection's field of view
         public Matrix4x4 GetProjectionMatrix()
         {
             Matrix4x4 matProj = Matrix4x4.Identity;

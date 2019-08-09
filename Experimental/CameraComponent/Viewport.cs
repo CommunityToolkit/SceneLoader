@@ -1,6 +1,9 @@
-﻿using System.Numerics;
+﻿// Licensed to the .NET Foundation under one or more agreements.
+// The .NET Foundation licenses this file to you under the MIT license.
+// See the LICENSE file in the project root for more information.
+
+using System.Numerics;
 using Windows.UI.Composition;
-using Windows.UI.Composition.Scenes;
 
 namespace CameraComponent
 {
@@ -11,17 +14,21 @@ namespace CameraComponent
     /// Uniform: If the screen is wide stretch to the height of the screen, if the screen is tall stretch to the width of the screen 
     /// UniformToFill: If the screen is tall stretch to the height of the screen, if the screen is wide stretch to the width of the screen 
 
-    public sealed class Viewport
+    public sealed class Viewport : Animatable
     {
-        private SceneVisual _sceneVisual;
+        private Visual _visual;
         private Compositor _compositor;
         private Camera _camera;
         private CompositionPropertySet _propertySet;
 
-        public Viewport(SceneVisual visual)
+        public Viewport(Compositor compositor)
         {
-            _sceneVisual = visual;
-            _compositor = _sceneVisual.Compositor;
+            if(compositor == null)
+            {
+                throw new System.ArgumentException("Compositor cannot be null");
+            }
+
+            _compositor = compositor;
             _propertySet = _compositor.CreatePropertySet();
 
             // Create properties of viewport
@@ -38,7 +45,43 @@ namespace CameraComponent
         /////////////////////////////////////////////////////////////////////////////////////////////////
 
         // The visual whose transform matrix we are using to create a camera
-        public SceneVisual SceneVisual { get => _sceneVisual; set => _sceneVisual = value; }
+        public Visual Visual
+        {
+            get => _visual;
+            set
+            {
+                // if camera is null then we cannot start animations so we just assign _visual to value
+                if(_camera == null)
+                {
+                    _visual = value;
+                }
+                // if _camera is not null...
+                else
+                {
+                    if(_visual == null)
+                    {
+                        // if _visual is null and we are assigning it to a non-null value then we start the animations
+                        if(value != null)
+                        {
+                            _visual = value;
+                            StartAnimationsOnTransformMatrix();
+                        }
+                    }
+                    else
+                    {
+                        // if _visual is not null then we have to stop animating its Transform Matrix regardless of what it is being assigned to
+                        _visual.StopAnimation("TransformMatrix");
+                        _visual = value;
+
+                        // if we are swapping out _visual then we restart animations on the _visual's Transform Matrix
+                        if(value != null)
+                        {
+                            StartAnimationsOnTransformMatrix();
+                        }
+                    }
+                }
+            }
+        }
 
         // The size of our viewport in the form of (width, height)
         public Vector2 Size
@@ -93,14 +136,17 @@ namespace CameraComponent
             {
                 _camera = value;
 
-                // if null, nothing should be displayed
-                if (_camera == null)
+                if(_visual != null)
                 {
-                    _sceneVisual.StopAnimation("TransfromMatrix");
-                }
-                else
-                {
-                    StartAnimationsOnTransformMatrix();
+                    // if null, nothing should be displayed
+                    if (_camera == null)
+                    {
+                        _visual.StopAnimation("TransfromMatrix");
+                    }
+                    else
+                    {
+                        StartAnimationsOnTransformMatrix();
+                    }
                 }
             }
         }
@@ -108,6 +154,11 @@ namespace CameraComponent
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// PUBLIC FUNCTIONS
         /////////////////////////////////////////////////////////////////////////////////////////////////   
+
+        public void AttachToVisual(Visual visual)
+        {
+            Visual = visual;
+        }
 
         // Returns the Matrix that is created based on the viewport's stretch property
         public Matrix4x4 GetStretchMatrix()
@@ -121,19 +172,19 @@ namespace CameraComponent
         // and the matrix that transforms the content to the center of the viewport
         public Matrix4x4 GetTransformMatrix()
         {
-            if(_sceneVisual == null)
+            if(_visual == null)
             {
-                return new Matrix4x4();
+                return Matrix4x4.Identity;
             }
 
-            return _sceneVisual.TransformMatrix;
+            return _visual.TransformMatrix;
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// ANIMATION FUNCTIONS
         /////////////////////////////////////////////////////////////////////////////////////////////////    
 
-        // Starts animations on _sceneVisual's TransformMatrix property
+        // Starts animations on _visual's TransformMatrix property
         private void StartAnimationsOnTransformMatrix()
         {
             // Creates an expression that is represents the product of all our transformations
@@ -143,8 +194,8 @@ namespace CameraComponent
             cameraMatExpression.SetReferenceParameter("Camera", Camera.GetPropertySet());
             cameraMatExpression.SetReferenceParameter("Viewport", _propertySet);
 
-            // Links our product of matrices expression to _sceneVisual's TransformMatrix
-            _sceneVisual.StartAnimation("TransformMatrix", cameraMatExpression);
+            // Links our product of matrices expression to _visual's TransformMatrix
+            _visual.StartAnimation("TransformMatrix", cameraMatExpression);
         }
 
         // Starts an expression animation on StretchMatrix property based on the Stretch 
@@ -226,6 +277,11 @@ namespace CameraComponent
         public void StopAnimation(string propertyName)
         {
             _propertySet.StopAnimation(propertyName);
+        }
+        
+        public CompositionPropertySet GetPropertySet()
+        {
+            return _propertySet;
         }
     }
 }

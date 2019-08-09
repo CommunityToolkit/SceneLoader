@@ -15,8 +15,8 @@ namespace CameraComponent
             _propertySet = _compositor.CreatePropertySet();
 
             // Create the properties for the projection
-            _propertySet.InsertScalar("Height", 1000f);
-            _propertySet.InsertScalar("Width", 1000f);
+            _propertySet.InsertScalar("Height", 100f);
+            _propertySet.InsertScalar("Width", 100f);
             _propertySet.InsertScalar("Near", 1f);
             _propertySet.InsertScalar("Far", 1000f);
             _propertySet.InsertMatrix4x4("ProjectionMatrix", Matrix4x4.Identity);
@@ -89,9 +89,20 @@ namespace CameraComponent
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
+        /// PUBLIC FUNCTIONS
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+
+        public Matrix4x4 GetProjectionMatrix()
+        {
+            Matrix4x4 matProj = Matrix4x4.Identity;
+            _propertySet.TryGetMatrix4x4("ProjectionMatrix", out matProj);
+            return matProj;
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////
         /// ANIMATION FUNCTIONS
         /////////////////////////////////////////////////////////////////////////////////////////////////
-        
+
         public CompositionPropertySet GetPropertySet()
         {
             return _propertySet;

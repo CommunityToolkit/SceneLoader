@@ -106,6 +106,30 @@ namespace CameraComponent
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
+        /// PUBLIC FUNCTIONS
+        /////////////////////////////////////////////////////////////////////////////////////////////////   
+
+        // Returns the Matrix that is created based on the viewport's stretch property
+        public Matrix4x4 GetStretchMatrix()
+        {
+            Matrix4x4 matStretch = Matrix4x4.Identity;
+            _propertySet.TryGetMatrix4x4("StretchMatrix", out matStretch);
+            return matStretch;
+        }
+
+        // Returns the product of the Camera's model view projection matrix, the viewport's stretch matrix, 
+        // and the matrix that transforms the content to the center of the viewport
+        public Matrix4x4 GetTransformMatrix()
+        {
+            if(_sceneVisual == null)
+            {
+                return new Matrix4x4();
+            }
+
+            return _sceneVisual.TransformMatrix;
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////
         /// ANIMATION FUNCTIONS
         /////////////////////////////////////////////////////////////////////////////////////////////////    
 

@@ -116,6 +116,18 @@ namespace CameraComponent
             Latitude = MathF.Atan2(value.Z, value.Y);
         }
 
+        public Matrix4x4 GetViewMatrix()
+        {
+            return _fpCam.GetViewMatrix();
+        }
+
+        public Matrix4x4 GetModelViewProjectionMatrix()
+        {
+            Matrix4x4 matMVP = Matrix4x4.Identity;
+            _propertySet.TryGetMatrix4x4("ModelViewProjectionMatrix", out matMVP);
+            return matMVP;
+        }
+
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// ANIMATION FUNCTIONS
         ///////////////////////////////////////////////////////////////////////////////////////////////// 

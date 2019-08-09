@@ -143,6 +143,24 @@ namespace CameraComponent
             Pitch = MathF.Asin(direction.Y);
         }
 
+        public Matrix4x4 GetViewMatrix()
+        {
+            // create view matrix based on the camera's rotation and position
+            Matrix4x4 matPos = Matrix4x4.CreateTranslation(-Position);
+            Matrix4x4 matRoll = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 0, 1), -Roll);
+            Matrix4x4 matPitch = Matrix4x4.CreateFromAxisAngle(new Vector3(1, 0, 0), -Pitch);
+            Matrix4x4 matYaw = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 1, 0), -Yaw);
+
+           return matPos * matYaw * matPitch * matRoll;            
+        }
+
+        public Matrix4x4 GetModelViewProjectionMatrix()
+        {
+            Matrix4x4 matMVP = Matrix4x4.Identity;
+            _propertySet.TryGetMatrix4x4("ModelViewProjectionMatrix", out matMVP);
+            return matMVP;
+        }
+
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// ANIMATION FUNCTIONS
         /////////////////////////////////////////////////////////////////////////////////////////////////         

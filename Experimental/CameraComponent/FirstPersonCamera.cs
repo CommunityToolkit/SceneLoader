@@ -1,264 +1,166 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Diagnostics;
-using System.Drawing;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.ApplicationModel.Store;
 using Windows.UI.Composition;
-using Windows.UI.Composition.Scenes;
 using Windows.UI.Xaml;
-using Windows.UI.Xaml.Media;
 
 namespace CameraComponent
 {
     public sealed class FirstPersonCamera : Camera
     {
-        private Compositor compositor;
-
-        private Vector3 position;
-        private float yaw, pitch, roll;
-        private Projection projection;
-
-        private CompositionPropertySet propertySet;
-
-        private bool useAnimations;
-       
+        private Compositor _compositor;
+        private Projection _projection;
+        private CompositionPropertySet _propertySet;
+               
         public FirstPersonCamera()
         {
-            this.compositor = Window.Current.Compositor;
+            _compositor = Window.Current.Compositor;
 
-            Yaw = 0;
-            Pitch = 0;
-            Roll = 0;
-            Position = Vector3.Zero;
-            Projection = new PerspectiveProjection();
+            // Create the properties for the camera
+            _propertySet = _compositor.CreatePropertySet();
+            _propertySet.InsertVector3("Position", Vector3.Zero);
+            _propertySet.InsertScalar("Yaw", 0f);
+            _propertySet.InsertScalar("Pitch", 0f);
+            _propertySet.InsertScalar("Roll", 0f);
+            _propertySet.InsertMatrix4x4("ModelViewProjectionMatrix", Matrix4x4.Identity);
+
+            // Default is an orthographic projection
+            Projection = new OrthographicProjection();
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// PUBLIC PROPERTIES
         ///////////////////////////////////////////////////////////////////////////////////////////////// 
+
+        // Camera's rotation about the y-axis, from 0 to 2Pi counter clockwise 
         public float Yaw
         {
             get
             {
-                if (UseAnimations)
-                {
-                    float curr = 0.0f;
-                    return (propertySet.TryGetScalar("Yaw", out curr) == CompositionGetValueStatus.Succeeded) ? curr : yaw;
-                }
-                else
-                {
-                    return yaw;
-                }
+                float curr;
+                _propertySet.TryGetScalar("Yaw", out curr);
+                return curr;
             }
             set
             {
-                if (UseAnimations)
-                {
-                    propertySet.InsertScalar("Yaw", value);
-                }
-                else
-                { 
-                    yaw = value;
-                    RaisePropertyChanged("Yaw");
-                }
+                _propertySet.InsertScalar("Yaw", value);
             }
         }
+
+        // Camera's rotation about the x-axis, from 0 to 2Pi counter clockwise
         public float Pitch 
         {
             get
             {
-                if (UseAnimations)
-                {
-                    float curr = 0.0f;
-                    return (propertySet.TryGetScalar("Pitch", out curr) == CompositionGetValueStatus.Succeeded) ? curr : pitch;
-                }
-                else
-                {
-                    return pitch;
-                }
+                float curr;
+                _propertySet.TryGetScalar("Pitch", out curr);
+                return curr;
             }
             set
             {
-                if (UseAnimations)
-                {
-                    propertySet.InsertScalar("Pitch", value);
-                }
-                else
-                {
-                    pitch = value;
-                    RaisePropertyChanged("Pitch");
-                }
+                _propertySet.InsertScalar("Pitch", value);
             }
         }
+
+        // Camera's rotation about the z-axis, from 0 to 2Pi counter clockwise
         public float Roll
         {
             get
             {
-                if (UseAnimations)
-                {
-                    float curr = 0.0f;
-                    return (propertySet.TryGetScalar("Roll", out curr) == CompositionGetValueStatus.Succeeded) ? curr : roll;
-                }
-                else
-                {
-                    return roll;
-                }
+                float curr;
+                _propertySet.TryGetScalar("Roll", out curr);
+                return curr;
             }
             set
             {
-                if (UseAnimations)
-                {
-                    propertySet.InsertScalar("Roll", value);
-                }
-                else
-                {
-                    roll = value;
-                    RaisePropertyChanged("Roll");
-                }
+                _propertySet.InsertScalar("Roll", value);
             }
         }
+
+        // Camera's location in world space
         public Vector3 Position
         {
             get
             {
-                if(UseAnimations)
-                {
-                    Vector3 curr = Vector3.Zero;
-                    return (propertySet.TryGetVector3("Position", out curr) == CompositionGetValueStatus.Succeeded) ? curr : position;
-                }
-                else
-                {
-                    return position;
-                }
+                Vector3 curr;
+                _propertySet.TryGetVector3("Position", out curr);
+                return curr;
             }
             set
             {
-                if (UseAnimations)
-                {
-                    propertySet.InsertVector3("Position", value);
-                }
-                else
-                {
-                    position = value;
-                    RaisePropertyChanged("Position");
-                }
+                _propertySet.InsertVector3("Position", value);
             }
         }
-        public Vector3 LookDirection
-        {
-            get => Vector3.Zero;
-            set
-            {
-                Vector3 direction = value;
-                if (value != Vector3.Zero)
-                {
-                    direction = Vector3.Normalize(value);
-                }
-                
-                direction.X *= -1; 
-                Yaw = (MathF.PI / 2f) + MathF.Atan2(direction.Z, direction.X);
-                Pitch = MathF.Asin(direction.Y);                    
-            }
-        }
-        public bool UseAnimations
-        {
-            get => useAnimations;
-            set
-            {
-                if(value != useAnimations)
-                {
-                    useAnimations = value;
-                    // turn animations off
-                    if (!value)
-                    {
-                        propertySet.TryGetVector3("Position", out position);
-                        propertySet.TryGetScalar("Yaw", out yaw);
-                        propertySet.TryGetScalar("Pitch", out pitch);
-                        propertySet.TryGetScalar("Roll", out roll);
-                        RaisePropertyChanged("ViewMatrix");
-                    }
-                    // turn animations on
-                    else
-                    {
-                        RaisePropertyChanged("ViewMatrix");
-                    }
-                }
-            }
-        }
+
+        // The camera's projection, orthographic or perspective
         public Projection Projection
         {
-            get => projection;
+            get => _projection;
             set
             {
-                projection = value;
-                projection.PropertyChanged += PropertyChanged;
-                RaisePropertyChanged("Projection");
-            }
-        }
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void RaisePropertyChanged(string name)
-        {
-            if(PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
+                _projection = value;
+
+                // create view matrix based on the camera's rotation and position
+                var matPos = "Matrix4x4.CreateTranslation(-FPCamera.Position)";
+                var matRoll = "Matrix4x4.CreateFromAxisAngle(Vector3(0, 0, 1), -FPCamera.Roll)";
+                var matPitch = "Matrix4x4.CreateFromAxisAngle(Vector3(1, 0, 0), -FPCamera.Pitch)";
+                var matYaw = "Matrix4x4.CreateFromAxisAngle(Vector3(0, 1, 0), -FPCamera.Yaw)";
+                var viewMat = matPos + "*" + matYaw + "*" + matPitch + "*" + matRoll;
+
+                // create a matrix that is the product of the camera's view matrix and the projection's projection matrix
+                var modelViewProjMatExpression = _compositor.CreateExpressionAnimation();
+                if (_projection == null) // if null then the default is an orthographic projection
+                {
+                    OrthographicProjection defaultProj = new OrthographicProjection();
+                    modelViewProjMatExpression.Expression = viewMat + "*" + "DefaultProjection.ProjectionMatrix";
+                    modelViewProjMatExpression.SetReferenceParameter("FPCamera", _propertySet);
+                    modelViewProjMatExpression.SetReferenceParameter("DefaultProjection", Projection.GetPropertySet());
+                }
+                else
+                {                    
+                    modelViewProjMatExpression.Expression = viewMat + "*" + "Projection.ProjectionMatrix";
+                    modelViewProjMatExpression.SetReferenceParameter("FPCamera", _propertySet);
+                    modelViewProjMatExpression.SetReferenceParameter("Projection", Projection.GetPropertySet());   
+                }
+
+                StartAnimation("ModelViewProjectionMatrix", modelViewProjMatExpression);
             }
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// PUBLIC FUNCTIONS
         /////////////////////////////////////////////////////////////////////////////////////////////////
-        public Matrix4x4 CreateViewMatrix()
+        
+        // rotates the camera to target the direction parameter
+        public void SetLookDirection(Vector3 direction)
         {
-            Matrix4x4 transformation = Matrix4x4.Identity;
-            Matrix4x4 matPos = Matrix4x4.CreateTranslation(-position);
-            Matrix4x4 matRoll = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 0, 1), -roll);
-            Matrix4x4 matPitch = Matrix4x4.CreateFromAxisAngle(new Vector3(1, 0, 0), -pitch);
-            Matrix4x4 matYaw = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 1, 0), -yaw);
+            if (direction != Vector3.Zero)
+            {
+                direction = Vector3.Normalize(direction);
+            }
 
-            return matPos * matYaw * matPitch * matRoll;
+            direction.X *= -1;
+            Yaw = (MathF.PI / 2f) + MathF.Atan2(direction.Z, direction.X);
+            Pitch = MathF.Asin(direction.Y);
         }
 
         /////////////////////////////////////////////////////////////////////////////////////////////////
         /// ANIMATION FUNCTIONS
-        ///////////////////////////////////////////////////////////////////////////////////////////////// 
-        public void CreateExpressionAnimation(CompositionPropertySet toAnimate, string propertyName)
-        {
-            propertySet = compositor.CreatePropertySet();
-            propertySet.InsertVector3("Position", Position);
-            propertySet.InsertScalar("Yaw", Yaw);
-            propertySet.InsertScalar("Pitch", Pitch);
-            propertySet.InsertScalar("Roll", Roll);
-
-            var matPos = "Matrix4x4.CreateTranslation(-FPCamera.Position)";
-            var matRoll = "Matrix4x4.CreateFromAxisAngle(Vector3(0, 0, 1), -FPCamera.Roll)";
-            var matPitch = "Matrix4x4.CreateFromAxisAngle(Vector3(1, 0, 0), -FPCamera.Pitch)";
-            var matYaw = "Matrix4x4.CreateFromAxisAngle(Vector3(0, 1, 0), -FPCamera.Yaw)";
-            var viewMat = matPos + "*" + matYaw + "*" + matPitch + "*" + matRoll;
-
-            var camExpression = compositor.CreateExpressionAnimation();
-            camExpression.Expression = viewMat;
-            camExpression.SetReferenceParameter("FPCamera", propertySet);
-
-            toAnimate.StartAnimation(propertyName, camExpression);
-        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////         
         public CompositionPropertySet GetPropertySet()
         {
-            return propertySet;
+            return _propertySet;
         }
+
+        // start an animation on the specified property
         public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
-            propertySet.StartAnimation(propertyName, animation);
+            _propertySet.StartAnimation(propertyName, animation);
         }
+
+        // stop the animation on the given property
         public void StopAnimation(string propertyName)
         {
-            propertySet.StopAnimation(propertyName);
+            _propertySet.StopAnimation(propertyName);
         }
     }
 }

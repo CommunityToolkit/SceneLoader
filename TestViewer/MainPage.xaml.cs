@@ -6,7 +6,6 @@ using System;
 using System.Numerics;
 using System.Threading.Tasks;
 using Windows.Storage;
-using Windows.Storage.Streams;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Scenes;
 using Windows.UI.Xaml;
@@ -14,7 +13,6 @@ using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Hosting;
 using SceneLoaderComponent;
 using CameraComponent;
-using Windows.ApplicationModel.Appointments.DataProvider;
 
 namespace TestViewer
 {
@@ -47,10 +45,6 @@ namespace TestViewer
             camera.Longitude = MathF.PI / 2f;
             camera.Latitude = MathF.PI / 2f;
             camera.Projection = new PerspectiveProjection();
-
-            camera.UseAnimations = false;
-
-            
         }
 
         async Task<SceneNode> LoadGLTF(Uri uri)

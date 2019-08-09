@@ -1,309 +1,207 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
-using Windows.Networking.Sockets;
-using Windows.Storage;
+﻿using System.Numerics;
 using Windows.UI.Composition;
 using Windows.UI.Composition.Scenes;
-using Windows.UI.Xaml;
 
 namespace CameraComponent
 {
-    public enum Stretch { Fill, FixX, FixY, Uniform, UniformToFill };
+    public enum Stretch { Fill, FixX, FixY, Uniform, UniformToFill};
+    /// Fill: Stretch the image to the size of the viewport so the same amount of the image is always shown
+    /// FixX: Stretch the image to the width of the screen so the same amount of horizontal space in the scene is always shown 
+    /// FixY: Stretch the image to the height of the screen so the same amount of vertical space in the scene is always shown 
+    /// Uniform: If the screen is wide stretch to the height of the screen, if the screen is tall stretch to the width of the screen 
+    /// UniformToFill: If the screen is tall stretch to the height of the screen, if the screen is wide stretch to the width of the screen 
 
     public sealed class Viewport
     {
-        private SceneVisual sceneVisual;
-        private Vector2 size;
-        private Vector3 offset;
-        private Stretch stretch;
-        private Camera camera;
-
-        private CompositionPropertySet propertySet;
+        private SceneVisual _sceneVisual;
+        private Compositor _compositor;
+        private Camera _camera;
+        private CompositionPropertySet _propertySet;
 
         public Viewport(SceneVisual visual)
         {
-            sceneVisual = visual;
-            var windowSize = Window.Current.Bounds;
-            size = new Vector2((float)windowSize.Width, (float)windowSize.Height);
-            //offset = 0.5f * new Vector3(size, 0.0f);
-            offset = Vector3.Zero;
+            _sceneVisual = visual;
+            _compositor = _sceneVisual.Compositor;
+            _propertySet = _compositor.CreatePropertySet();
 
-            stretch = Stretch.Uniform;
+            // Create properties of viewport
+            _propertySet.InsertVector3("Offset", Vector3.Zero);
+            _propertySet.InsertVector2("Size", new Vector2(100, 100));
+            _propertySet.InsertScalar("Stretch", (int)Stretch.Uniform);
+            _propertySet.InsertMatrix4x4("StretchMatrix", Matrix4x4.Identity);
+
+            StartAnimationsOnStretchMatrix();
         }
 
-        public SceneVisual Visual
-        {
-            get => sceneVisual;
-            set
-            {
-                sceneVisual = value;
-                CreateCameraMatrix();
-            }
-        }
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /// PUBLIC PROPERTIES
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        // The visual whose transform matrix we are using to create a camera
+        public SceneVisual SceneVisual { get => _sceneVisual; set => _sceneVisual = value; }
+
+        // The size of our viewport in the form of (width, height)
         public Vector2 Size
         {
             get
             {
-                if (camera.UseAnimations)
-                {
-                    Vector2 curr = Vector2.Zero;
-                    return (propertySet.TryGetVector2("Size", out curr) == CompositionGetValueStatus.Succeeded) ? curr : size;
-                }
-                else
-                {
-                    return size;
-                }
+                Vector2 curr;
+                _propertySet.TryGetVector2("Size", out curr);
+                return curr;
             }
             set
             {
-                if(camera.UseAnimations)
-                {
-                    propertySet.InsertVector2("Size", value);
-                }
-                else
-                {
-                    size = value;
-                    CreateCameraMatrix();
-                }
+                _propertySet.InsertVector2("Size", value);
             }
         }
+
+        // The coordinate of the top left corner of our viewport in screen space
         public Vector3 Offset
         {
             get
             {
-                if(camera.UseAnimations)
-                {
-                    Vector3 curr = Vector3.Zero;
-                    return (propertySet.TryGetVector3("Offset", out curr) == CompositionGetValueStatus.Succeeded) ? curr : offset;
-                }
-                else
-                {
-                    return offset;
-                }
-               
+                Vector3 curr;
+                _propertySet.TryGetVector3("Offset", out curr);
+                return curr;
             }
             set
             {
-                if (camera.UseAnimations)
-                {
-                    propertySet.InsertVector3("Offset", value);
-                }
-                else
-                {
-
-                    offset = value;
-                    CreateCameraMatrix();
-                }
+                _propertySet.InsertVector3("Offset", value);
             }
         }
+
+        // Governs how our image is stretched to the near plane
         public Stretch Stretch
         {
-            get => stretch;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("Stretch", out curr);
+                return (Stretch)curr;
+            }
             set
             {
-                stretch = value;
-                if(camera.UseAnimations)
-                {
-                    propertySet.InsertScalar("Stretch", (float)stretch);
-                }
-                else
-                {
-                    CreateCameraMatrix();
-                }
+                _propertySet.InsertScalar("Stretch", (int)value);
             }
         }
+
+        // The camera object that holds our position in world space
         public Camera Camera
         {
-            get => camera;
+            get => _camera;
             set
             {
-                camera = value;
-                camera.PropertyChanged += Camera_PropertyChanged;
-                Camera.Projection.PropertyChanged += Camera_PropertyChanged;
+                _camera = value;
 
-                if (camera.UseAnimations)
+                // if null, nothing should be displayed
+                if (_camera == null)
                 {
-                    CreateExpressionAnimation();
+                    _sceneVisual.StopAnimation("TransfromMatrix");
                 }
                 else
                 {
-                    CreateCameraMatrix();
+                    StartAnimationsOnTransformMatrix();
                 }
             }
         }
 
-        public Matrix4x4 CreateCameraMatrix()
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /// ANIMATION FUNCTIONS
+        /////////////////////////////////////////////////////////////////////////////////////////////////    
+
+        // Starts animations on _sceneVisual's TransformMatrix property
+        private void StartAnimationsOnTransformMatrix()
         {
-            Matrix4x4 camMat = camera.CreateViewMatrix() * camera.Projection.CreateNormalizingMatrix() * this.CreateStretchMatrix() 
-                * Matrix4x4.CreateTranslation(offset + new Vector3(size / 2, 0));
-            if (sceneVisual != null)
-            {
-                sceneVisual.TransformMatrix = camMat;
-            }
-
-            return camMat;
-        }
-        public Matrix4x4 CreateStretchMatrix()
-        {
-            bool stretchX;
-            Matrix4x4 matStretch = Matrix4x4.Identity;
-
-            switch (stretch)
-            {
-                case Stretch.Fill:
-                    matStretch.M11 = size.X;
-                    matStretch.M22 = size.Y;
-                    matStretch.M33 = (size.X + size.Y) / 2f;
-                    break;
-                case Stretch.FixX:
-                    stretchX = true;
-                    matStretch = StretchMatrix(stretchX);
-                    break;
-                case Stretch.FixY:
-                    stretchX = false;
-                    matStretch = StretchMatrix(stretchX);
-                    break;
-                case Stretch.Uniform:
-                    // wide
-                    if (size.X >= size.Y)
-                    {
-                        stretchX = false;
-                        matStretch = StretchMatrix(stretchX);
-                    }
-                    // long
-                    else
-                    {
-                        stretchX = true;
-                        matStretch = StretchMatrix(stretchX);
-                    }
-                    break;
-                case Stretch.UniformToFill:
-                    // wide
-                    if (size.X >= size.Y)
-                    {
-                        stretchX = true;
-                        matStretch = StretchMatrix(stretchX);
-                    }
-                    // long
-                    else
-                    {
-                        stretchX = false;
-                        matStretch = StretchMatrix(stretchX);
-                    }
-                    break;
-            }
-
-            return matStretch;
-        }
-
-        public void CreateExpressionAnimation()
-        {
-            propertySet = Window.Current.Compositor.CreatePropertySet();
-            propertySet.InsertVector3("Offset", offset);
-            propertySet.InsertVector2("Size", size);
-            propertySet.InsertScalar("Stretch", (float)stretch);
-            propertySet.InsertMatrix4x4("ViewMatrix", camera.CreateViewMatrix());
-            propertySet.InsertMatrix4x4("NormalizingMatrix", camera.Projection.CreateNormalizingMatrix());
-            propertySet.InsertMatrix4x4("StretchMatrix", this.CreateStretchMatrix());
-
-            camera.Projection.CreateExpressionAnimation(propertySet, "NormalizingMatrix");
-            camera.CreateExpressionAnimation(propertySet, "ViewMatrix");
-            propertySet.StartAnimation("StretchMatrix", this.CreateStretchExpressionMatrix());
-
-            var cameraMatExpression = Window.Current.Compositor.CreateExpressionAnimation();
-            cameraMatExpression.Expression = "Viewport.ViewMatrix * Viewport.NormalizingMatrix * Viewport.StretchMatrix " +
+            // Creates an expression that is represents the product of all our transformations
+            var cameraMatExpression = _compositor.CreateExpressionAnimation();
+            cameraMatExpression.Expression = "Camera.ModelViewProjectionMatrix * Viewport.StretchMatrix " +
                 "* Matrix4x4.CreateTranslation(Vector3(Viewport.Offset.X + Viewport.Size.X / 2f, Viewport.Offset.Y + Viewport.Size.Y / 2f, Viewport.Offset.Z))";
-            cameraMatExpression.SetReferenceParameter("Viewport", propertySet);
+            cameraMatExpression.SetReferenceParameter("Camera", Camera.GetPropertySet());
+            cameraMatExpression.SetReferenceParameter("Viewport", _propertySet);
 
-            sceneVisual.StartAnimation("TransformMatrix", cameraMatExpression);
+            // Links our product of matrices expression to _sceneVisual's TransformMatrix
+            _sceneVisual.StartAnimation("TransformMatrix", cameraMatExpression);
         }
 
-        private Matrix4x4 StretchMatrix(bool stretchX)
+        // Starts an expression animation on StretchMatrix property based on the Stretch 
+        private void StartAnimationsOnStretchMatrix()
         {
-            Matrix4x4 matScale = Matrix4x4.Identity;
-            matScale.M11 = matScale.M22 = matScale.M33 = stretchX ? size.X : size.Y;
+            // Expression that creates a matrix based on the value of the viewport's stretch property
+            string stretchMat =
+            // if (Stretch == Fill)
+            "(Viewport.Stretch == 0f)?" + 
+                "Matrix4x4(" +
+                "Viewport.Size.X, 0, 0, 0, " +
+                "0, Viewport.Size.Y, 0, 0, " +
+                "0, 0, (Viewport.Size.X + Viewport.Size.Y) / 2f, 0, " +
+                "0, 0, 0, 1) " +
+            ":" +
+            // else if (Stretch == FixX)
+            "(Viewport.Stretch == 1f)? " +
+                "Matrix4x4(" +
+                "Viewport.Size.X, 0, 0, 0, " +
+                "0, Viewport.Size.X, 0, 0, " +
+                "0, 0, Viewport.Size.X, 0, " +
+                "0, 0, 0, 1)" +
+            ":" +
+            // else if (Stretch == FixY)
+            "(Viewport.Stretch == 2f)? " +
+                "Matrix4x4(" +
+                "Viewport.Size.Y, 0, 0, 0, " +
+                "0, Viewport.Size.Y, 0, 0, " +
+                "0, 0, Viewport.Size.Y, 0, " +
+                "0, 0, 0, 1)" +
+            ":" +
+            // else if (Stretch == Uniform)
+            "(Viewport.Stretch == 3f)? " +
+                // if (Size.X >= Size.Y)
+                "(Viewport.Size.X >= Viewport.Size.Y)? " +
+                    "Matrix4x4(" +
+                    "Viewport.Size.Y, 0, 0, 0, " +
+                    "0, Viewport.Size.Y, 0, 0, " +
+                    "0, 0, Viewport.Size.Y, 0, " +
+                    "0, 0, 0, 1) " +
+                ":" +
+                // else 
+                    "Matrix4x4(" +
+                    "Viewport.Size.X, 0, 0, 0, " +
+                    "0, Viewport.Size.X, 0, 0, " +
+                    "0, 0, Viewport.Size.X, 0, " +
+                    "0, 0, 0, 1)" +
+            ":" +
+             // else if (Stretch == UniformToFill)
+                // if (Size.X < Size.Y)
+                "(Viewport.Size.X < Viewport.Size.Y)? " +
+                    "Matrix4x4(" +
+                    "Viewport.Size.Y, 0, 0, 0, " +
+                    "0, Viewport.Size.Y, 0, 0, " +
+                    "0, 0, Viewport.Size.Y, 0, " +
+                    "0, 0, 0, 1) " +
+                ":" +
+                // else
+                    "Matrix4x4(" +
+                    "Viewport.Size.X, 0, 0, 0, " +
+                    "0, Viewport.Size.X, 0, 0, " +
+                    "0, 0, Viewport.Size.X, 0, " +
+                    "0, 0, 0, 1)";
 
-            return matScale;
-        }
-        private ExpressionAnimation CreateStretchExpressionMatrix()
-        {
-            string stretchMat = "(Viewport.Stretch == 0f)?" +
-                            "Matrix4x4(" +
-                            "Viewport.Size.X, 0, 0, 0, " +
-                            "0, Viewport.Size.Y, 0, 0, " +
-                            "0, 0, (Viewport.Size.X + Viewport.Size.Y) / 2f, 0, " +
-                            "0, 0, 0, 1) " +
-                        ":" +
-                        "(Viewport.Stretch == 1f)? " +
-                            "Matrix4x4(" +
-                            "Viewport.Size.X, 0, 0, 0, " +
-                            "0, Viewport.Size.X, 0, 0, " +
-                            "0, 0, Viewport.Size.X, 0, " +
-                            "0, 0, 0, 1)" +
-                        ":" +
-                        "(Viewport.Stretch == 2f)? " +
-                            "Matrix4x4(" +
-                            "Viewport.Size.Y, 0, 0, 0, " +
-                            "0, Viewport.Size.Y, 0, 0, " +
-                            "0, 0, Viewport.Size.Y, 0, " +
-                            "0, 0, 0, 1)" +
-                        ":" +
-                        "(Viewport.Stretch == 3f)? " +
-                            "(Viewport.Size.X >= Viewport.Size.Y)? " +
-                                "Matrix4x4(" +
-                                "Viewport.Size.Y, 0, 0, 0, " +
-                                "0, Viewport.Size.Y, 0, 0, " +
-                                "0, 0, Viewport.Size.Y, 0, " +
-                                "0, 0, 0, 1) " +
-                                ":" +
-                                "Matrix4x4(" +
-                                "Viewport.Size.X, 0, 0, 0, " +
-                                "0, Viewport.Size.X, 0, 0, " +
-                                "0, 0, Viewport.Size.X, 0, " +
-                                "0, 0, 0, 1)" +
-                        ":" +
-                            "(Viewport.Size.X < Viewport.Size.Y)? " +
-                                "Matrix4x4(" +
-                                "Viewport.Size.Y, 0, 0, 0, " +
-                                "0, Viewport.Size.Y, 0, 0, " +
-                                "0, 0, Viewport.Size.Y, 0, " +
-                                "0, 0, 0, 1) " +
-                                ":" +
-                                "Matrix4x4(" +
-                                "Viewport.Size.X, 0, 0, 0, " +
-                                "0, Viewport.Size.X, 0, 0, " +
-                                "0, 0, Viewport.Size.X, 0, " +
-                                "0, 0, 0, 1)";
-
-            var stretchExpression = Window.Current.Compositor.CreateExpressionAnimation();
+            var stretchExpression = _compositor.CreateExpressionAnimation();
             stretchExpression.Expression = stretchMat;
-            stretchExpression.SetReferenceParameter("Viewport", propertySet);
-            
-            return stretchExpression;
+            stretchExpression.SetReferenceParameter("Viewport", _propertySet);
+
+            _propertySet.StartAnimation("StretchMatrix", stretchExpression);
         }
 
-        private void Camera_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        // start an animation on the specified property
+        public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
-            if(!Camera.UseAnimations)
-            {
-                this.CreateCameraMatrix();
-            }
-            else
-            {
-                if (e.PropertyName == "Projection" || e.PropertyName == "xFov" || e.PropertyName == "yFov")
-                {
-                    camera.Projection.CreateExpressionAnimation(propertySet, "NormalizingMatrix");
-                }
-                else
-                {
-                    this.CreateExpressionAnimation();
-                }
-            }
+            _propertySet.StartAnimation(propertyName, animation);
+        }
+
+        // stop the animation on the given property
+        public void StopAnimation(string propertyName)
+        {
+            _propertySet.StopAnimation(propertyName);
         }
     }
 }

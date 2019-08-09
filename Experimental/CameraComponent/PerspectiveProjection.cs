@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 
@@ -12,99 +7,123 @@ namespace CameraComponent
 {
     public sealed class PerspectiveProjection : Projection
     {
-        private float xfov, yfov, near, far;
-        private CompositionPropertySet propertySet;
+        private Compositor _compositor;
+        private CompositionPropertySet _propertySet;
 
         public PerspectiveProjection()
         {
-            xfov = MathF.PI / 2;
-            yfov = MathF.PI / 2;
+            _compositor = Window.Current.Compositor;
+            _propertySet = _compositor.CreatePropertySet();
 
-            near = 1f;
-            far = 1000f;
+            // Create the properties for the projection
+            _propertySet.InsertScalar("XFov", MathF.PI / 2);
+            _propertySet.InsertScalar("YFov", MathF.PI / 2);
+            _propertySet.InsertScalar("Near", 1f);
+            _propertySet.InsertScalar("Far", 1000f);
+            _propertySet.InsertMatrix4x4("ProjectionMatrix", Matrix4x4.Identity);
+
+            StartAnimationonProjectionMatrix();
         }
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /// PUBLIC PROPERTIES
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+        
+        // The x field of view for this projection
         public float XFov
         {
-            get => xfov;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("XFov", out curr);
+                return curr;
+            }
             set
             {
-                xfov = value;
-                RaisePropertyChanged("xFov");
+                _propertySet.InsertScalar("XFov", value);
             }
         }
+
+        // The y field of view for this projection
         public float YFov
         {
-            get => yfov;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("YFov", out curr);
+                return curr;
+            }
             set
             {
-                yfov = value;
-                RaisePropertyChanged("yFov");
+                _propertySet.InsertScalar("YFov", value);
             }
         }
+
+        // Distance from the eye to the near plane
         public float Near
         {
-            get => near;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("Near", out curr);
+                return curr;
+            }
             set
             {
-                near = value;
-                RaisePropertyChanged("Near");
+                _propertySet.InsertScalar("Near", value);
             }
         }
+
+        // Distance from the eye to the far plane
         public float Far
         {
-            get => far;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("Far", out curr);
+                return curr;
+            }
             set
             {
-                far = value;
-                RaisePropertyChanged("Far");
+                _propertySet.InsertScalar("Far", value);
             }
         }
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void RaisePropertyChanged(string name)
-        {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
-        }
-        public void CreateExpressionAnimation(CompositionPropertySet toAnimate, string propertyName)
-        {
-            propertySet = Window.Current.Compositor.CreatePropertySet();
-            propertySet.InsertScalar("XFov", xfov);
-            propertySet.InsertScalar("YFov", yfov);
-            propertySet.InsertScalar("Near", near);
-            propertySet.InsertScalar("Far", far);
 
-            var matNorm =
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /// ANIMATION FUNCTIONS
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        public CompositionPropertySet GetPropertySet()
+        {
+            return _propertySet;
+        }
+
+        private void StartAnimationonProjectionMatrix()
+        {
+            var matProj =
                 "Matrix4x4(" +
                 "1 / Tan(PerspProj.XFov / 2), 0, 0, 0, " +
                 "0, 1 / Tan(PerspProj.YFov / 2), 0, 0, " +
                 "0, 0, (PerspProj.Far - PerspProj.Near) / -(PerspProj.Far + PerspProj.Near), -1, " +
                 "0, 0, (-2 * PerspProj.Far * PerspProj.Near) / -(PerspProj.Far + PerspProj.Near), 1)";
 
-            var projExpression = Window.Current.Compositor.CreateExpressionAnimation();
-            projExpression.Expression = matNorm;
-            projExpression.SetReferenceParameter("PerspProj", propertySet);
+            var projExpression = _compositor.CreateExpressionAnimation();
+            projExpression.Expression = matProj;
+            projExpression.SetReferenceParameter("PerspProj", _propertySet);
 
-            toAnimate.StartAnimation(propertyName, projExpression);
+            _propertySet.StartAnimation("ProjectionMatrix", projExpression);
         }
 
-        public Matrix4x4 CreateNormalizingMatrix()
+        // start an animation on the specified property
+        public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
-            float near = -Near;
-            float far = -Far;
-            float top = MathF.Tan(yfov / 2) * near;
-            float right = MathF.Tan(xfov / 2) * near;
+            _propertySet.StartAnimation(propertyName, animation);
+        }
 
-            Matrix4x4 matNormalize = Matrix4x4.Identity;
-            matNormalize.M11 = near / right;
-            matNormalize.M22 = near / top;
-            matNormalize.M33 = -(far + near) / (far - near);
-            matNormalize.M34 = -1;
-            matNormalize.M43 = (-2 * far * near) / (far - near);
-
-            return matNormalize;
+        // stop the animation on the given property
+        public void StopAnimation(string propertyName)
+        {
+            _propertySet.StopAnimation(propertyName);
         }
     }
 }

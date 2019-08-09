@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Numerics;
 using Windows.UI.Composition;
 using Windows.UI.Xaml;
 
@@ -12,91 +6,123 @@ namespace CameraComponent
 {
     public sealed class OrthographicProjection : Projection
     {
-        private float height, width, near, far;
-        private CompositionPropertySet propertySet;
+        private CompositionPropertySet _propertySet;
+        private Compositor _compositor;
 
         public OrthographicProjection()
         {
-            height = 1000f;
-            width = 1000f;
+            _compositor = Window.Current.Compositor;
+            _propertySet = _compositor.CreatePropertySet();
 
-            near = 1f;
-            far = 1000f;
+            // Create the properties for the projection
+            _propertySet.InsertScalar("Height", 1000f);
+            _propertySet.InsertScalar("Width", 1000f);
+            _propertySet.InsertScalar("Near", 1f);
+            _propertySet.InsertScalar("Far", 1000f);
+            _propertySet.InsertMatrix4x4("ProjectionMatrix", Matrix4x4.Identity);
+
+            StartAnimationsOnProjectionMatrix();
         }
 
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /// PUBLIC PROPERTIES
+        ///////////////////////////////////////////////////////////////////////////////////////////////// 
+
+        // Height of the plane that the image is projected onto
         public float Height
         {
-            get => height;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("Height", out curr);
+                return curr;
+            }
             set
             {
-                height = value;
-                RaisePropertyChanged("Height");
+                _propertySet.InsertScalar("Height", value);
             }
         }
+
+        // Width of the plane the imame is projected onto
         public float Width
         {
-            get => width;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("Width", out curr);
+                return curr;
+            }
             set
             {
-                width = value;
-                RaisePropertyChanged("Width");
+                _propertySet.InsertScalar("Width", value);
             }
         }
+
+        // Distance from the eye to the near plane
         public float Near
         {
-            get => near;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("Near", out curr);
+                return curr;
+            }
             set
             {
-                near = value;
-                RaisePropertyChanged("Near");
+                _propertySet.InsertScalar("Near", value);
             }
         }
+
+        // Distance from the eye to the far plane
         public float Far
         {
-            get => far;
+            get
+            {
+                float curr;
+                _propertySet.TryGetScalar("Far", out curr);
+                return curr;
+            }
             set
             {
-                far = value;
-                RaisePropertyChanged("Far");
+                _propertySet.InsertScalar("Far", value);
             }
         }
-        public void CreateExpressionAnimation(CompositionPropertySet toAnimate, string propertyName)
-        {
-            propertySet = Window.Current.Compositor.CreatePropertySet();
-            propertySet.InsertScalar("Height", height);
-            propertySet.InsertScalar("Width", width);
-            propertySet.InsertScalar("Near", near);
-            propertySet.InsertScalar("Far", far);
 
-            var matNorm =
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        /// ANIMATION FUNCTIONS
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+        
+        public CompositionPropertySet GetPropertySet()
+        {
+            return _propertySet;
+        }
+
+        private void StartAnimationsOnProjectionMatrix()
+        {
+            var matProj =
                 "Matrix4x4(" +
                 "1 / OrthoProj.Width, 0, 0, 0, " +
                 "0, 1 / OrthoProj.Height, 0, 0, " +
                 "0, 0, 1 / (OrthoProj.Far - OrthoProj.Near), 0, " +
                 "0, 0, 0, 1)";
 
-            var projExpression = Window.Current.Compositor.CreateExpressionAnimation();
-            projExpression.Expression = matNorm;
-            projExpression.SetReferenceParameter("OrthoProj", propertySet);
+            var projExpression = _compositor.CreateExpressionAnimation();
+            projExpression.Expression = matProj;
+            projExpression.SetReferenceParameter("OrthoProj", _propertySet);
 
-            toAnimate.StartAnimation(propertyName, projExpression);
+            _propertySet.StartAnimation("ProjectionMatrix", projExpression);
         }
-        public Matrix4x4 CreateNormalizingMatrix()
-        {
-            Matrix4x4 matNormalize = Matrix4x4.Identity;
-            matNormalize.M11 = 1 / width;
-            matNormalize.M22 = 1 / height;
-            matNormalize.M33 = 1 / (Far - Near);
 
-            return matNormalize;
-        }
-        public event PropertyChangedEventHandler PropertyChanged;
-        public void RaisePropertyChanged(string name)
+        // start an animation on the specified property
+        public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
-            if (PropertyChanged != null)
-            {
-                PropertyChanged(this, new PropertyChangedEventArgs(name));
-            }
+            _propertySet.StartAnimation(propertyName, animation);
+        }
+
+        // stop the animation on the given property
+        public void StopAnimation(string propertyName)
+        {
+            _propertySet.StopAnimation(propertyName);
         }
     }
 }

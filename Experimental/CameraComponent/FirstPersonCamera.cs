@@ -8,12 +8,26 @@ using Windows.UI.Composition;
 
 namespace CameraComponent
 {
+    /// <summary>
+    /// A class that defines a FirstPersonCamera that has a position in 3D world space and rotates about the x,y, and z axes.
+    /// Implements the Camera and Animatable interfaces.
+    /// </summary>
     public sealed class FirstPersonCamera : Camera
     {
         private Compositor _compositor;
         private Projection _projection;
         private CompositionPropertySet _propertySet;
-               
+
+        /// <summary>
+        /// Creates a FirstPersonCamera with default properties.
+        /// Position = Vector3.Zero
+        /// Yaw = 0
+        /// Pitch = 0
+        /// Roll = 0
+        /// ModelViewProjectionMatrix = Matrix4x4.Identity
+        /// </summary>
+        /// <param name="compositor"></param>
+        /// <exception cref="System.ArgumentException">Thrown when constructor is passed a null value.</exception>
         public FirstPersonCamera(Compositor compositor)
         {
             if (compositor == null)
@@ -35,11 +49,10 @@ namespace CameraComponent
             Projection = new OrthographicProjection(_compositor);
         }
 
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// PUBLIC PROPERTIES
-        ///////////////////////////////////////////////////////////////////////////////////////////////// 
-
-        // Camera's rotation about the y-axis, from 0 to 2Pi counter clockwise 
+        /// <summary>
+        /// Camera's rotation about the y-axis in radians.
+        /// Rotates counterclockwise from 0 to 2Pi.
+        /// </summary>
         public float Yaw
         {
             get
@@ -54,7 +67,10 @@ namespace CameraComponent
             }
         }
 
-        // Camera's rotation about the x-axis, from 0 to 2Pi counter clockwise
+        /// <summary>
+        /// Camera's rotation about the x-axis in radians.
+        /// Rotates counterclockwise from 0 to 2Pi.
+        /// </summary>
         public float Pitch 
         {
             get
@@ -69,7 +85,10 @@ namespace CameraComponent
             }
         }
 
-        // Camera's rotation about the z-axis, from 0 to 2Pi counter clockwise
+        /// <summary>
+        /// Camera's rotation about the z-axis in radians.
+        /// Rotates counterclockwise from 0 to 2Pi.
+        /// </summary>
         public float Roll
         {
             get
@@ -84,7 +103,9 @@ namespace CameraComponent
             }
         }
 
-        // Camera's location in world space
+        /// <summary>
+        /// Camera's position in 3D world space.
+        /// </summary>
         public Vector3 Position
         {
             get
@@ -99,7 +120,12 @@ namespace CameraComponent
             }
         }
 
-        // The camera's projection, orthographic or perspective
+        /// <summary>
+        /// The camera's reference to an object that implements the Projection interace.
+        /// When setting, this property starts animations on the camera's ModelViewProjectionMatrix property.
+        /// </summary>
+        /// <remarks>When set to null, the ModelViewProjectionProperty is animated using an OrthographicProjection with the
+        /// default values of: Height = 100, Width = 100, Near = 1, Far = 1000.</remarks>
         public Projection Projection
         {
             get => _projection;
@@ -133,12 +159,11 @@ namespace CameraComponent
                 StartAnimation("ModelViewProjectionMatrix", modelViewProjMatExpression);
             }
         }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// PUBLIC FUNCTIONS
-        /////////////////////////////////////////////////////////////////////////////////////////////////
         
-        // rotates the camera to target the direction parameter
+        /// <summary>
+        /// Rotates the camera's yaw and pitch to look in the given direction.
+        /// </summary>
+        /// <param name="direction"></param>
         public void SetLookDirection(Vector3 direction)
         {
             if (direction != Vector3.Zero)
@@ -151,7 +176,10 @@ namespace CameraComponent
             Pitch = MathF.Asin(direction.Y);
         }
 
-        // returns the matrix created from the camera's position and rotation
+        /// <summary>
+        /// Returns the matrix created from the camera's translation and rotation transformations.
+        /// </summary>
+        /// <returns>A Matrix4x4 that is the product of the matrices created from the camera's position, yaw, pitch, and roll.</returns>
         public Matrix4x4 GetViewMatrix()
         {
             // create view matrix based on the camera's rotation and position
@@ -163,30 +191,40 @@ namespace CameraComponent
            return matPos * matYaw * matPitch * matRoll;            
         }
 
-        // Returns the product of the camera's view matrix and the projection matrix
+        /// <summary>
+        /// Returns that a matrix created from the camera's view matrix and it's Projection's projection matrix.
+        /// </summary>
+        /// <returns>A Matrix4x4 that is the product of matrices created from the Camera's position, yaw, pitch, and roll and its Projection's projection matrix.</returns>
         public Matrix4x4 GetModelViewProjectionMatrix()
         {
             Matrix4x4 matMVP = Matrix4x4.Identity;
             _propertySet.TryGetMatrix4x4("ModelViewProjectionMatrix", out matMVP);
             return matMVP;
         }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// ANIMATION FUNCTIONS
-        /////////////////////////////////////////////////////////////////////////////////////////////////   
         
+        /// <summary>
+        /// Returns the camera's set of animatable properties.
+        /// </summary>
+        /// <returns>A CompositionPropertySet holding the camera's properties.</returns>
         public CompositionPropertySet GetPropertySet()
         {
             return _propertySet;
         }
 
-        // start an animation on the specified property
+        /// <summary>
+        /// Starts a given animation on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to be animated.</param>
+        /// <param name="animation">The animation being applied.</param>
         public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
             _propertySet.StartAnimation(propertyName, animation);
         }
 
-        // stop the animation on the given property
+        /// <summary>
+        /// Stops any animations on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property whose animations we are stopping.</param>
         public void StopAnimation(string propertyName)
         {
             _propertySet.StopAnimation(propertyName);

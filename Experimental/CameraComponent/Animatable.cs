@@ -6,13 +6,27 @@ using Windows.UI.Composition;
 
 namespace CameraComponent
 {
+    /// <summary>
+    /// An interface that defines functions non-Composition objects can implement to become animatable.
+    /// </summary>
     public interface Animatable
     {
-        // Returns the set of animatable properties
+        /// <summary>
+        /// Returns an object's set of animatable properties.
+        /// </summary>
         CompositionPropertySet GetPropertySet();
-        // Starts a given animation on the specified property
+
+        /// <summary>
+        /// Starts a given animation on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to be animated.</param>
+        /// <param name="animation">The animation being applied.</param>
         void StartAnimation(string propertyName, CompositionAnimation animation);
-        // Stops any animation on the specified property
+
+        /// <summary>
+        /// Stops any animations on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property whose animations we are stopping.</param>
         void StopAnimation(string propertyName);
     }
 }

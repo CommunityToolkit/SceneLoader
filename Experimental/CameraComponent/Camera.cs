@@ -6,13 +6,27 @@ using System.Numerics;
 
 namespace CameraComponent
 {
+    /// <summary>
+    /// An interface that defines properties and functions that a Camera object must implement.
+    /// </summary>
     public interface Camera : Animatable
     {
-        // A reference to either a perspective or an orthographic projection profile
+        /// <summary>
+        /// A reference to a class that implements the Projection interace.
+        /// </summary>
         Projection Projection { get; set; }
-        // returns the matrix created from the camera's position and rotation
+
+        /// <summary>
+        /// Returns the matrix created using the Camera's position and rotation in world space.
+        /// </summary>
+        /// /// <returns>A Matrix4x4 that is the product of the matrices representing the camera's translation and rotation.</returns>
         Matrix4x4 GetViewMatrix();
-        // Returns the product of the camera's view matrix and the projection matrix
+        
+        /// <summary>
+        /// Returns the matrix created using the Camera's view matrix and the Camera's Projection's matrix.
+        /// </summary>
+        /// <returns>A Matrix4x4 that is the the product of the matrices representing the camera's transformations in world space and
+        /// the matrix created by the Camera's Projection property.</returns>
         Matrix4x4 GetModelViewProjectionMatrix();
     }
 }

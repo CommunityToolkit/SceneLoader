@@ -7,13 +7,22 @@ using Windows.UI.Composition;
 
 namespace CameraComponent
 {
+    /// <summary>
+    /// Determines how the image is stretched to the viewport.
+    /// </summary>
+    /// <remarks>
+    /// Fill: Stretch the image to the size of the viewport so the same amount of the image is always shown.
+    /// FixX: Stretch the image to the width of the screen so the same amount of horizontal space in the scene is always shown.
+    /// FixY: Stretch the image to the height of the screen so the same amount of vertical space in the scene is always shown.
+    /// Uniform: If the screen is wide stretch to the height of the screen, if the screen is tall stretch to the width of the screen.
+    /// UniformToFill: If the screen is tall stretch to the height of the screen, if the screen is wide stretch to the width of the screen.
+    /// </remarks>
     public enum Stretch { Fill, FixX, FixY, Uniform, UniformToFill};
-    /// Fill: Stretch the image to the size of the viewport so the same amount of the image is always shown
-    /// FixX: Stretch the image to the width of the screen so the same amount of horizontal space in the scene is always shown 
-    /// FixY: Stretch the image to the height of the screen so the same amount of vertical space in the scene is always shown 
-    /// Uniform: If the screen is wide stretch to the height of the screen, if the screen is tall stretch to the width of the screen 
-    /// UniformToFill: If the screen is tall stretch to the height of the screen, if the screen is wide stretch to the width of the screen 
 
+    /// <summary>
+    /// Manages how a the content that is in view of a 3D camera is placed and stretched on the screen.
+    /// Implements the Animatable interface.
+    /// </summary>
     public sealed class Viewport : Animatable
     {
         private Visual _visual;
@@ -21,6 +30,15 @@ namespace CameraComponent
         private Camera _camera;
         private CompositionPropertySet _propertySet;
 
+        /// <summary>
+        /// Creates a Viewport with default properties.
+        /// Offset = Vector3.Zero
+        /// Size = Vector2(100, 100)
+        /// Stretch = Uniform
+        /// StretchMatrix = Matrix4x4.Identity
+        /// </summary>
+        /// <param name="compositor"></param>
+        /// <exception cref="System.ArgumentException">Thrown when constructor is passed a null value.</exception>
         public Viewport(Compositor compositor)
         {
             if(compositor == null)
@@ -40,11 +58,10 @@ namespace CameraComponent
             StartAnimationsOnStretchMatrix();
         }
 
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// PUBLIC PROPERTIES
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-
-        // The visual whose transform matrix we are using to create a camera
+        /// <summary>
+        /// The Visual whose TransformMatrix we are using to apply our Viewport's, Camera's, and Projection's transformations.
+        /// Starts and stops animations on the Visual's TransformMatrix based on the value it is set to and the value of the camera.
+        /// </summary>
         public Visual Visual
         {
             get => _visual;
@@ -83,7 +100,9 @@ namespace CameraComponent
             }
         }
 
-        // The size of our viewport in the form of (width, height)
+        /// <summary>
+        /// The size of the viewport in the form Vector2(width, height).
+        /// </summary>
         public Vector2 Size
         {
             get
@@ -98,7 +117,9 @@ namespace CameraComponent
             }
         }
 
-        // The coordinate of the top left corner of our viewport in screen space
+        /// <summary>
+        /// The coordinate of the top left corner of the viewport.
+        /// </summary>
         public Vector3 Offset
         {
             get
@@ -113,7 +134,9 @@ namespace CameraComponent
             }
         }
 
-        // Governs how our image is stretched to the near plane
+        /// <summary>
+        /// The viewport's stretch enum that governs how the image is stretched to the viewport.
+        /// </summary>
         public Stretch Stretch
         {
             get
@@ -128,7 +151,10 @@ namespace CameraComponent
             }
         }
 
-        // The camera object that holds our position in world space
+        /// <summary>
+        /// The viewport's reference to an object implementing the Camera interface.
+        /// When setting, this property starts or stops animations when the Visual is not null and based on the value it is being set to.
+        /// </summary>
         public Camera Camera
         {
             get => _camera;
@@ -151,25 +177,33 @@ namespace CameraComponent
             }
         }
 
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// PUBLIC FUNCTIONS
-        /////////////////////////////////////////////////////////////////////////////////////////////////   
 
+        /// <summary>
+        /// Co-opts the given Visual's TransformMatrix to be used to apply the viewport's, camera's, and projection's transformations to.
+        /// </summary>
+        /// <param name="visual">The Visual whose TransformMatrix we are co-opting.</param>
         public void AttachToVisual(Visual visual)
         {
             Visual = visual;
         }
 
-        // Returns the Matrix that is created based on the viewport's stretch property
+        
+        /// <summary>
+        /// Returns the matrix being used to apply a stretch transformation to the image.
+        /// </summary>
+        /// <returns>A Matrix4x4 that is generated based on the value of the viewport's Stretch property.</returns>
         public Matrix4x4 GetStretchMatrix()
         {
             Matrix4x4 matStretch = Matrix4x4.Identity;
             _propertySet.TryGetMatrix4x4("StretchMatrix", out matStretch);
             return matStretch;
         }
-
-        // Returns the product of the Camera's model view projection matrix, the viewport's stretch matrix, 
-        // and the matrix that transforms the content to the center of the viewport
+ 
+        /// <summary>
+        /// Returns the matrix that is being applied to the viewport's Visual's TransformMatrix property.
+        /// </summary>
+        /// <returns>The product of the viewport's camera's model view projection matrix, the viewport's stretch matrix,
+        /// and the matrix that transforms the content to the center of the viewport.</returns>
         public Matrix4x4 GetTransformMatrix()
         {
             if(_visual == null)
@@ -179,10 +213,6 @@ namespace CameraComponent
 
             return _visual.TransformMatrix;
         }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// ANIMATION FUNCTIONS
-        /////////////////////////////////////////////////////////////////////////////////////////////////    
 
         // Starts animations on _visual's TransformMatrix property
         private void StartAnimationsOnTransformMatrix()
@@ -267,18 +297,29 @@ namespace CameraComponent
             _propertySet.StartAnimation("StretchMatrix", stretchExpression);
         }
 
-        // start an animation on the specified property
+        /// <summary>
+        /// Starts a given animation on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to be animated.</param>
+        /// <param name="animation">The animation being applied.</param>
         public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
             _propertySet.StartAnimation(propertyName, animation);
         }
 
-        // stop the animation on the given property
+        /// <summary>
+        /// Stops any animations on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property whose animations we are stopping.</param>
         public void StopAnimation(string propertyName)
         {
             _propertySet.StopAnimation(propertyName);
         }
-        
+
+        /// <summary>
+        /// Returns the viewport's set of animatable properties.
+        /// </summary>
+        /// <returns>A CompositionPropertySet holding the viewport's properties.</returns>
         public CompositionPropertySet GetPropertySet()
         {
             return _propertySet;

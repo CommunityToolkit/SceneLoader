@@ -8,12 +8,26 @@ using Windows.UI.Composition;
 
 namespace CameraComponent
 {
+    /// <summary>
+    /// A class that defines an OrbitalCamera that orbits around a point in world space. 
+    /// Implements the Camera and Animatable interfaces.
+    /// </summary>
     public sealed class OrbitalCamera : Camera
     {
         private Compositor _compositor;
         private FirstPersonCamera _fpCam;
         private CompositionPropertySet _propertySet;
 
+        /// <summary>
+        /// Creates an OrbitalCamera with default properties.
+        /// Target = Vector3.Zero
+        /// Latitude = 0
+        /// Longitude = 0
+        /// Radius = 300
+        /// ModelViewProjectionMatrix = Matrix4x4.Identity
+        /// </summary>
+        /// <param name="compositor"></param>
+        /// <exception cref="System.ArgumentException">Thrown when constructor is passed a null value.</exception> 
         public OrbitalCamera(Compositor compositor)
         {
             if (compositor == null)
@@ -35,12 +49,10 @@ namespace CameraComponent
             // Connect orbital camera's properties to the _fpCam's properties
             StartAnimationsOnFPCamera();
         }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// PUBLIC PROPERTIES
-        ///////////////////////////////////////////////////////////////////////////////////////////////////
-
-        // The point in world space the orbital camera rotates about and focuses on
+        
+        /// <summary>
+        /// Point in 3D world space that the camera orbits about and centers it's view on.
+        /// </summary>
         public Vector3 Target
         {
             get
@@ -55,7 +67,9 @@ namespace CameraComponent
             }
         }
 
-        // Distance between the camera and its Target
+        /// <summary>
+        /// Distance between the camera and its Target.
+        /// </summary>
         public float Radius
         {
             get
@@ -70,7 +84,10 @@ namespace CameraComponent
             }
         }
 
-        // The angle of separation from the positive y-axis, from 0 to Pi
+        /// <summary>
+        /// The camera's angle of separation from the positive y-axis in radians.
+        /// From 0 to Pi.
+        /// </summary>
         public float Latitude
         {
             get
@@ -88,7 +105,10 @@ namespace CameraComponent
             }
         }
 
-        // The angle of separation from the positive z-axis, from 0 to 2 Pi counter clockwise
+        /// <summary>
+        /// The angle of separation from the positive z-axis in radians.
+        /// Rotates counterclockwise from 0 to 2Pi. 
+        /// </summary>
         public float Longitude
         {
             get
@@ -103,20 +123,27 @@ namespace CameraComponent
             }
         }
 
-        // The camera's projection, orthographic or perspective
+        /// <summary>
+        /// The camera's reference to an object that implements the Projection interace.
+        /// When setting, this property starts animations on the camera's ModelViewProjectionMatrix property.
+        /// </summary>
+        /// <remarks>When set to null, the ModelViewProjectionProperty is animated using an OrthographicProjection with the
+        /// default values of: Height = 100, Width = 100, Near = 1, Far = 1000.</remarks>
         public Projection Projection { get => _fpCam.Projection; set => _fpCam.Projection = value; }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// PUBLIC FUNCTIONS
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        
-        // Gets the camera's position in world space
+                
+        /// <summary>
+        /// Returns the camera's position in 3D world space.
+        /// </summary>
+        /// <returns>A Vector3 that represents the camera's extrinsic position in 3D world space.</returns>
         public Vector3 GetAbsolutePosition()
         {
             return _fpCam.Position;
         }
 
-        // Gets the camera's position in world space
+        /// <summary>
+        /// Returns the camera's position in 3D world space.
+        /// </summary>
+        /// <param name="value"></param>
         public void SetAbsolutePosition(Vector3 value)
         {
             Radius = Vector3.Distance(Target, value);
@@ -124,23 +151,25 @@ namespace CameraComponent
             Latitude = MathF.Atan2(value.Z, value.Y);
         }
 
-        // returns the matrix created from the camera's position and rotation
+        /// <summary>
+        /// Returns the matrix created from the camera's translation and rotation transformations.
+        /// </summary>
+        /// <returns>A Matrix4x4 that is created from the camera's target, radius, latitude, and longitude.</returns>
         public Matrix4x4 GetViewMatrix()
         {
             return _fpCam.GetViewMatrix();
         }
 
-        // Returns the product of the camera's view matrix and the projection matrix
+        /// <summary>
+        /// Returns that a matrix created from the camera's view matrix and it's Projection's projection matrix.
+        /// </summary>
+        /// <returns>A Matrix4x4 that is the product of matrices created from the Camera's target, radius, latitude, and longitude and its Projection's projection matrix.</returns>
         public Matrix4x4 GetModelViewProjectionMatrix()
         {
             Matrix4x4 matMVP = Matrix4x4.Identity;
             _propertySet.TryGetMatrix4x4("ModelViewProjectionMatrix", out matMVP);
             return matMVP;
         }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// ANIMATION FUNCTIONS
-        ///////////////////////////////////////////////////////////////////////////////////////////////// 
         
         // Creates expression animations to drive an FPCamera's position and rotation through the OrbitalCamera's latitude, longitude, and radius
         private void StartAnimationsOnFPCamera()
@@ -180,16 +209,29 @@ namespace CameraComponent
             _propertySet.StartAnimation("ModelViewProjectionMatrix", modelViewProjExpression);
         }
 
+        /// <summary>
+        /// Returns the camera's set of animatable properties.
+        /// </summary>
+        /// <returns>A CompositionPropertySet holding the camera's properties.</returns>
         public CompositionPropertySet GetPropertySet()
         {
             return _propertySet;
         }
 
+        /// <summary>
+        /// Starts a given animation on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to be animated.</param>
+        /// <param name="animation">The animation being applied.</param>
         public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
             _propertySet.StartAnimation(propertyName, animation);
         }
 
+        /// <summary>
+        /// Stops any animations on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property whose animations we are stopping.</param>
         public void StopAnimation(string propertyName)
         {
             _propertySet.StopAnimation(propertyName);

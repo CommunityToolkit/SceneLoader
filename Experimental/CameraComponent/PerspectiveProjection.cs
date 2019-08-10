@@ -8,11 +8,24 @@ using Windows.UI.Composition;
 
 namespace CameraComponent
 {
+    /// <summary>
+    /// A class that defines a perspective projection that defines a distance to the near and far planes and an XFov and YFov.
+    /// Implements the Projection and Animatable interfaces.
+    /// </summary>
     public sealed class PerspectiveProjection : Projection
     {
         private Compositor _compositor;
         private CompositionPropertySet _propertySet;
 
+        /// <summary>
+        /// Creates a PerspectiveProjection with default properties.
+        /// XFov = Pi / 2
+        /// YFov = Pi / 2
+        /// Near = 1
+        /// Far = 1000
+        /// </summary>
+        /// <param name="compositor"></param>
+        /// <exception cref="System.ArgumentException">Thrown when constructor is passed a null value.</exception> 
         public PerspectiveProjection(Compositor compositor)
         {
             if (compositor == null)
@@ -32,12 +45,10 @@ namespace CameraComponent
 
             StartAnimationonProjectionMatrix();
         }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// PUBLIC PROPERTIES
-        ///////////////////////////////////////////////////////////////////////////////////////////////// 
-        
-        // The x field of view for this projection
+                
+        /// <summary>
+        /// The x field of view of the projection's thrustum.
+        /// </summary>
         public float XFov
         {
             get
@@ -52,7 +63,9 @@ namespace CameraComponent
             }
         }
 
-        // The y field of view for this projection
+        /// <summary>
+        /// The y field of view of the projection's thrustum.
+        /// </summary>
         public float YFov
         {
             get
@@ -67,7 +80,9 @@ namespace CameraComponent
             }
         }
 
-        // Distance from the eye to the near plane
+        /// <summary>
+        /// Distance from the eye to the near plane.
+        /// </summary>
         public float Near
         {
             get
@@ -82,7 +97,9 @@ namespace CameraComponent
             }
         }
 
-        // Distance from the eye to the far plane
+        /// <summary>
+        /// Distance from the eye to the far plane.
+        /// </summary>
         public float Far
         {
             get
@@ -96,12 +113,11 @@ namespace CameraComponent
                 _propertySet.InsertScalar("Far", value);
             }
         }
-
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// PUBLIC FUNCTIONS
-        ///////////////////////////////////////////////////////////////////////////////////////////////// 
         
-        // Returns the Matrix created from the distance to the near and far planes and the projection's field of view
+        /// <summary>
+        /// Returns the matrix created from the projection's Near, Far, XFov, and YFov values.
+        /// </summary>
+        /// <returns>A Matrix4x4 that normalizes the scene in the range (-1, -1, -1) to (1, 1, 1).</returns>
         public Matrix4x4 GetProjectionMatrix()
         {
             Matrix4x4 matProj = Matrix4x4.Identity;
@@ -109,10 +125,11 @@ namespace CameraComponent
             return matProj;
         }
 
-        /////////////////////////////////////////////////////////////////////////////////////////////////
-        /// ANIMATION FUNCTIONS
-        /////////////////////////////////////////////////////////////////////////////////////////////////
 
+        /// <summary>
+        /// Returns the projection's set of animatable properties.
+        /// </summary>
+        /// <returns>A CompositionPropertySet holding the projection's properties.</returns>
         public CompositionPropertySet GetPropertySet()
         {
             return _propertySet;
@@ -134,13 +151,20 @@ namespace CameraComponent
             _propertySet.StartAnimation("ProjectionMatrix", projExpression);
         }
 
-        // start an animation on the specified property
+        /// <summary>
+        /// Starts a given animation on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property to be animated.</param>
+        /// <param name="animation">The animation being applied.</param>
         public void StartAnimation(string propertyName, CompositionAnimation animation)
         {
             _propertySet.StartAnimation(propertyName, animation);
         }
 
-        // stop the animation on the given property
+        /// <summary>
+        /// Stops any animations on the specified property.
+        /// </summary>
+        /// <param name="propertyName">The name of the property whose animations we are stopping.</param>
         public void StopAnimation(string propertyName)
         {
             _propertySet.StopAnimation(propertyName);

@@ -177,7 +177,6 @@ namespace CameraComponent
             }
         }
 
-
         /// <summary>
         /// Co-opts the given Visual's TransformMatrix to be used to apply the viewport's, camera's, and projection's transformations to.
         /// </summary>
@@ -187,7 +186,6 @@ namespace CameraComponent
             Visual = visual;
         }
 
-        
         /// <summary>
         /// Returns the matrix being used to apply a stretch transformation to the image.
         /// </summary>
@@ -195,7 +193,56 @@ namespace CameraComponent
         public Matrix4x4 GetStretchMatrix()
         {
             Matrix4x4 matStretch = Matrix4x4.Identity;
-            _propertySet.TryGetMatrix4x4("StretchMatrix", out matStretch);
+
+            if(Stretch == Stretch.Fill)
+            {
+                matStretch.M11 = Size.X;
+                matStretch.M22 = Size.Y;
+                matStretch.M33 = (Size.X + Size.Y) / 2f;
+            }
+            else if(Stretch == Stretch.FixX)
+            {
+                matStretch.M11 = Size.X;
+                matStretch.M22 = Size.X;
+                matStretch.M33 = Size.X;
+            }
+            else if(Stretch == Stretch.FixY)
+            {
+                matStretch.M11 = Size.Y;
+                matStretch.M22 = Size.Y;
+                matStretch.M33 = Size.Y;
+            }
+            else if(Stretch == Stretch.Uniform)
+            {
+                if(Size.X >= Size.Y)
+                {
+                    matStretch.M11 = Size.Y;
+                    matStretch.M22 = Size.Y;
+                    matStretch.M33 = Size.Y;
+                }
+                else
+                {
+                    matStretch.M11 = Size.X;
+                    matStretch.M22 = Size.X;
+                    matStretch.M33 = Size.X;
+                }
+            }
+            else if(Stretch == Stretch.UniformToFill)
+            {
+                if (Size.X < Size.Y)
+                {
+                    matStretch.M11 = Size.Y;
+                    matStretch.M22 = Size.Y;
+                    matStretch.M33 = Size.Y;
+                }
+                else
+                {
+                    matStretch.M11 = Size.X;
+                    matStretch.M22 = Size.X;
+                    matStretch.M33 = Size.X;
+                }
+            }
+
             return matStretch;
         }
  
@@ -211,7 +258,7 @@ namespace CameraComponent
                 return Matrix4x4.Identity;
             }
 
-            return _visual.TransformMatrix;
+            return Camera.GetModelViewProjectionMatrix() * GetStretchMatrix() * Matrix4x4.CreateTranslation(new Vector3(Offset.X + Size.X / 2f, Offset.Y + Size.Y / 2f, Offset.Z));
         }
 
         // Starts animations on _visual's TransformMatrix property

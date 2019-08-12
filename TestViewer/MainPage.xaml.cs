@@ -52,7 +52,7 @@ namespace TestViewer
             camera.Longitude = MathF.PI / 2f;
             camera.Latitude = MathF.PI / 2f;
             camera.Projection = new PerspectiveProjection(_compositor);
-                       
+
             // add event handler for window size change
             Window.Current.CoreWindow.SizeChanged += CoreWindow_SizeChanged;
         }

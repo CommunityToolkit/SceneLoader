@@ -197,9 +197,7 @@ namespace CameraComponent
         /// <returns>A Matrix4x4 that is the product of matrices created from the Camera's position, yaw, pitch, and roll and its Projection's projection matrix.</returns>
         public Matrix4x4 GetModelViewProjectionMatrix()
         {
-            Matrix4x4 matMVP = Matrix4x4.Identity;
-            _propertySet.TryGetMatrix4x4("ModelViewProjectionMatrix", out matMVP);
-            return matMVP;
+            return GetViewMatrix() * Projection.GetProjectionMatrix();
         }
         
         /// <summary>

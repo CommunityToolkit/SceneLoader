@@ -121,7 +121,12 @@ namespace CameraComponent
         public Matrix4x4 GetProjectionMatrix()
         {
             Matrix4x4 matProj = Matrix4x4.Identity;
-            _propertySet.TryGetMatrix4x4("ProjectionMatrix", out matProj);
+            matProj.M11 = 1 / MathF.Tan(XFov / 2);
+            matProj.M22 = 1 / MathF.Tan(YFov / 2);
+            matProj.M33 = (Far - Near) / -(Far + Near);
+            matProj.M34 = -1;
+            matProj.M43 = (-2 * Far * Near) / -(Far + Near);
+
             return matProj;
         }
 

@@ -137,7 +137,11 @@ namespace CameraComponent
         /// <returns>A Vector3 that represents the camera's extrinsic position in 3D world space.</returns>
         public Vector3 GetAbsolutePosition()
         {
-            return _fpCam.Position;
+            float x = MathF.Sin(Latitude) * MathF.Sin(Longitude);
+            float y = -MathF.Cos(Latitude);
+            float z = MathF.Sin(Latitude) * MathF.Cos(Longitude);
+
+            return Target + (Radius * new Vector3(x, y, z));
         }
 
         /// <summary>
@@ -157,7 +161,15 @@ namespace CameraComponent
         /// <returns>A Matrix4x4 that is created from the camera's target, radius, latitude, and longitude.</returns>
         public Matrix4x4 GetViewMatrix()
         {
-            return _fpCam.GetViewMatrix();
+            Vector3 position = GetAbsolutePosition();
+
+            // use OrbitalCamera's properties to calculate rotaation in terms of yaw, pitch, and roll
+            Matrix4x4 matPos = Matrix4x4.CreateTranslation(-position);
+            Matrix4x4 matRoll = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 0, 1), 0);
+            Matrix4x4 matPitch = Matrix4x4.CreateFromAxisAngle(new Vector3(1, 0, 0), -MathF.Asin(Vector3.Normalize(Target - position).Y));
+            Matrix4x4 matYaw = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 1, 0), -Longitude);
+
+            return matPos * matYaw * matPitch * matRoll;
         }
 
         /// <summary>
@@ -166,9 +178,7 @@ namespace CameraComponent
         /// <returns>A Matrix4x4 that is the product of matrices created from the Camera's target, radius, latitude, and longitude and its Projection's projection matrix.</returns>
         public Matrix4x4 GetModelViewProjectionMatrix()
         {
-            Matrix4x4 matMVP = Matrix4x4.Identity;
-            _propertySet.TryGetMatrix4x4("ModelViewProjectionMatrix", out matMVP);
-            return matMVP;
+            return GetViewMatrix() * Projection.GetProjectionMatrix();
         }
         
         // Creates expression animations to drive an FPCamera's position and rotation through the OrbitalCamera's latitude, longitude, and radius

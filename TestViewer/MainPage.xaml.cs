@@ -71,6 +71,6 @@ namespace TestViewer
             return loader.Load(buffer, _compositor);
         }
 
-        async void Page_Loaded(object sender, RoutedEventArgs e) => _sceneVisual.Root = await LoadGLTF(new Uri("ms-appx:///Assets/DamagedHelmet.gltf"));
+        async void Page_Loaded(object sender, RoutedEventArgs e) => await LoadGLTF(new Uri("ms-appx:///Assets/DamagedHelmet.gltf"));
     }
 }

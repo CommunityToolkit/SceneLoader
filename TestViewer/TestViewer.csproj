@@ -132,6 +132,7 @@
     <Content Include="Assets\DamagedHelmet.gltf">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="Assets\OrientationTest.gltf" />
     <None Include="TestViewer_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

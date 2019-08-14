@@ -47,7 +47,7 @@ namespace CameraComponent
         }
                 
         /// <summary>
-        /// The x field of view of the projection's thrustum.
+        /// The x field of view of the projection's frustum.
         /// </summary>
         public float XFov
         {
@@ -64,7 +64,7 @@ namespace CameraComponent
         }
 
         /// <summary>
-        /// The y field of view of the projection's thrustum.
+        /// The y field of view of the projection's frustum.
         /// </summary>
         public float YFov
         {

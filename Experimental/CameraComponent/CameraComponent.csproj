@@ -46,6 +46,9 @@
     <DebugType>full</DebugType>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
+    <ProduceReferenceWinmd>false</ProduceReferenceWinmd>
+    <DocumentationFile>
+    </DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
     <PlatformTarget>x86</PlatformTarget>
@@ -124,6 +127,9 @@
     <Compile Include="Camera.cs" />
     <Compile Include="FirstPersonCamera.cs" />
     <Compile Include="Animatable.cs" />
+    <Compile Include="ModelViewer.xaml.cs">
+      <DependentUpon>ModelViewer.xaml</DependentUpon>
+    </Compile>
     <Compile Include="OrbitalCamera.cs" />
     <Compile Include="OrthographicProjection.cs" />
     <Compile Include="PerspectiveProjection.cs" />
@@ -136,13 +142,25 @@
       <Version>6.2.8</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Page Include="ModelViewer.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\SceneLoader\SceneLoader.vcxproj">
+      <Project>{88c4d662-8669-433b-8a8b-47b3a17e3c6e}</Project>
+      <Name>SceneLoaderComponent</Name>
+    </ProjectReference>
+  </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\WindowsXaml\v$(VisualStudioVersion)\Microsoft.Windows.UI.Xaml.CSharp.targets" />
   <Target Name="Pack">
- <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
- </Target>
+    <!-- Dummy target to mute warnings about attempts to create a NuPkg -->
+  </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

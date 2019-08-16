@@ -55,6 +55,8 @@ namespace CameraComponent
             _propertySet.InsertScalar("Stretch", (int)Stretch.Uniform);
             _propertySet.InsertMatrix4x4("StretchMatrix", Matrix4x4.Identity);
 
+            Camera = new OrbitalCamera(_compositor);
+
             StartAnimationsOnStretchMatrix();
         }
 

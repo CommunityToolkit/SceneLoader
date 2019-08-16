@@ -9,7 +9,7 @@ using Windows.UI.Composition;
 namespace CameraComponent
 {
     /// <summary>
-    /// A class that defines a perspective projection that defines a distance to the near and far planes and an XFov and YFov.
+    /// A class that defines a perspective projection with a distance to the near and far planes and a field of view.
     /// Implements the Projection and Animatable interfaces.
     /// </summary>
     public sealed class PerspectiveProjection : Projection
@@ -19,8 +19,7 @@ namespace CameraComponent
 
         /// <summary>
         /// Creates a PerspectiveProjection with default properties.
-        /// XFov = Pi / 2
-        /// YFov = Pi / 2
+        /// Fov = Pi / 2
         /// Near = 1
         /// Far = 1000
         /// </summary>
@@ -37,8 +36,7 @@ namespace CameraComponent
             _propertySet = _compositor.CreatePropertySet();
 
             // Create the properties for the projection
-            _propertySet.InsertScalar("XFov", MathF.PI / 2);
-            _propertySet.InsertScalar("YFov", MathF.PI / 2);
+            _propertySet.InsertScalar("Fov", MathF.PI / 2);
             _propertySet.InsertScalar("Near", 1f);
             _propertySet.InsertScalar("Far", 1000f);
             _propertySet.InsertMatrix4x4("ProjectionMatrix", Matrix4x4.Identity);
@@ -47,37 +45,38 @@ namespace CameraComponent
         }
                 
         /// <summary>
-        /// The x field of view of the projection's frustum.
+        /// The field of view of the projection's frustum in radians.
         /// </summary>
-        public float XFov
+        public float Fov
         {
             get
             {
                 float curr;
-                _propertySet.TryGetScalar("XFov", out curr);
+                _propertySet.TryGetScalar("Fov", out curr);
                 return curr;
             }
             set
             {
-                _propertySet.InsertScalar("XFov", value);
+                float epsilon = 0.0001f;
+                _propertySet.InsertScalar("Fov", MathF.Min(MathF.PI - epsilon, MathF.Max(epsilon, value)));
             }
         }
 
         /// <summary>
-        /// The y field of view of the projection's frustum.
+        /// The field of view of the projection's frustum in degrees.
         /// </summary>
-        public float YFov
+        public float FovInDegrees { get => ConvertRadiansToDegrees(Fov); set => Fov = ConvertDegreesToRadians(value); }
+
+        // Helper function that converts radians to degrees
+        private float ConvertRadiansToDegrees(float rads)
         {
-            get
-            {
-                float curr;
-                _propertySet.TryGetScalar("YFov", out curr);
-                return curr;
-            }
-            set
-            {
-                _propertySet.InsertScalar("YFov", value);
-            }
+            return (180 / MathF.PI) * rads;
+        }
+
+        // Helper function that converts radians to degrees
+        private float ConvertDegreesToRadians(float degs)
+        {
+            return (MathF.PI / 180) * degs;
         }
 
         /// <summary>
@@ -93,7 +92,8 @@ namespace CameraComponent
             }
             set
             {
-                _propertySet.InsertScalar("Near", value);
+                float epsilon = 0.0001f;
+                _propertySet.InsertScalar("Near", MathF.Max(epsilon, value));
             }
         }
 
@@ -113,16 +113,16 @@ namespace CameraComponent
                 _propertySet.InsertScalar("Far", value);
             }
         }
-        
+
         /// <summary>
-        /// Returns the matrix created from the projection's Near, Far, XFov, and YFov values.
+        /// Returns the matrix created from the projection's Near, Far, and Fov values.
         /// </summary>
         /// <returns>A Matrix4x4 that normalizes the scene in the range (-1, -1, -1) to (1, 1, 1).</returns>
         public Matrix4x4 GetProjectionMatrix()
         {
             Matrix4x4 matProj = Matrix4x4.Identity;
-            matProj.M11 = 1 / MathF.Tan(XFov / 2);
-            matProj.M22 = 1 / MathF.Tan(YFov / 2);
+            matProj.M11 = 1 / MathF.Tan(Fov / 2);
+            matProj.M22 = 1 / MathF.Tan(Fov / 2);
             matProj.M33 = (Far - Near) / -(Far + Near);
             matProj.M34 = -1;
             matProj.M43 = (-2 * Far * Near) / -(Far + Near);
@@ -144,8 +144,8 @@ namespace CameraComponent
         {
             var matProj =
                 "Matrix4x4(" +
-                "1 / Tan(PerspProj.XFov / 2), 0, 0, 0, " +
-                "0, 1 / Tan(PerspProj.YFov / 2), 0, 0, " +
+                "1 / Tan(PerspProj.Fov / 2), 0, 0, 0, " +
+                "0, 1 / Tan(PerspProj.Fov / 2), 0, 0, " +
                 "0, 0, (PerspProj.Far - PerspProj.Near) / -(PerspProj.Far + PerspProj.Near), -1, " +
                 "0, 0, (-2 * PerspProj.Far * PerspProj.Near) / -(PerspProj.Far + PerspProj.Near), 1)";
 

@@ -55,20 +55,19 @@ namespace CameraComponent
             // instantiate viewport and assign it "good" default values
             _viewport = new Viewport(_compositor);
             _viewport.AttachToVisual(_sceneVisual);
-            //_viewport.Size = new Vector2((float)Window.Current.Bounds.Width, (float)Window.Current.Bounds.Height);
-            //_viewport.Offset = new Vector3(_viewport.Size, 0f);
+            _viewport.Size = Target.ActualSize;
+            _viewport.Offset = new Vector3(_viewport.Size / 2f, 0f);
 
             // instantiate camera and assign it "good" default values
             _camera = new OrbitalCamera(_compositor);
             _camera.Target = new Vector3(0f, 0f, 0f);
             _camera.Radius = 600f;
-            _camera.Longitude = 0f;
-            _camera.Latitude = MathF.PI / 4;
+            _camera.Theta = 0f;
+            _camera.Phi = MathF.PI / 4;
 
             // instantiate projection and assign it "good" default values
             PerspectiveProjection projection = new PerspectiveProjection(_compositor);
-            projection.XFov = MathF.PI / 2;
-            projection.YFov = MathF.PI / 2;
+            projection.Fov = MathF.PI / 2;
 
             _camera.Projection = projection;
             _viewport.Camera = _camera;
@@ -81,6 +80,13 @@ namespace CameraComponent
             Target.PointerPressed += Target_PointerPressed;
             Target.PointerReleased += Target_PointerReleased;
             Target.PointerMoved += Target_PointerMoved;
+
+            Window.Current.CoreWindow.PointerReleased += CoreWindow_PointerReleased;
+        }
+
+        private void CoreWindow_PointerReleased(Windows.UI.Core.CoreWindow sender, Windows.UI.Core.PointerEventArgs args)
+        {
+            _mouseDowned = false;
         }
 
         private void Target_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -90,7 +96,6 @@ namespace CameraComponent
 
         private void Target_PointerWheelChanged(object sender, PointerRoutedEventArgs e)
         {
-            var a = e.GetCurrentPoint(Target).Properties.MouseWheelDelta;
             // positive if scroll away from the user, negative if scroll toward the user
             int scrollSign = Math.Sign(e.GetCurrentPoint(Target).Properties.MouseWheelDelta);
 
@@ -130,17 +135,17 @@ namespace CameraComponent
             {
                 // rotate proportionately to the size of the mouse movement
                 Vector2 newPos = e.GetCurrentPoint(Target).Position.ToVector2();
-                float longitudeDelta = newPos.X - _mouseDownLocation.X;
-                float latitudeDelta = newPos.Y - _mouseDownLocation.Y;
+                float thetaDelta = newPos.X - _mouseDownLocation.X;
+                float phiDelta = newPos.Y - _mouseDownLocation.Y;
 
                 _mouseDownLocation = newPos;
 
                 // higher number corresponds to faster rotation
                 float sensitivity = 0.005f;
 
-                // changes camera's latitude and longitude based on the sensitivity and size of the mouse movement
-                _camera.Longitude -= sensitivity * longitudeDelta;
-                _camera.Latitude -= sensitivity * latitudeDelta;
+                // changes camera's phi and theta based on the sensitivity and size of the mouse movement
+                _camera.Theta -= sensitivity * thetaDelta;
+                _camera.Phi -= sensitivity * phiDelta;
             }
         }
 

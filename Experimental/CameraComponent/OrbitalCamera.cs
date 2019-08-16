@@ -21,8 +21,8 @@ namespace CameraComponent
         /// <summary>
         /// Creates an OrbitalCamera with default properties.
         /// Target = Vector3.Zero
-        /// Latitude = 0
-        /// Longitude = 0
+        /// Phi = 0
+        /// Theta = 0
         /// Radius = 300
         /// ModelViewProjectionMatrix = Matrix4x4.Identity
         /// </summary>
@@ -39,10 +39,12 @@ namespace CameraComponent
             _fpCam = new FirstPersonCamera(_compositor);
             _propertySet = _compositor.CreatePropertySet();
 
+            float epsilon = 0.0001f;
+
             // Create the properties for the camera
             _propertySet.InsertVector3("Target", Vector3.Zero);
-            _propertySet.InsertScalar("Latitude", 0f);
-            _propertySet.InsertScalar("Longitude", 0f);
+            _propertySet.InsertScalar("Phi", epsilon);
+            _propertySet.InsertScalar("Theta", 0f);
             _propertySet.InsertScalar("Radius", 300f);
             _propertySet.InsertMatrix4x4("ModelViewProjectionMatrix", Matrix4x4.Identity);
 
@@ -88,39 +90,85 @@ namespace CameraComponent
         /// The camera's angle of separation from the positive y-axis in radians.
         /// From 0 to Pi.
         /// </summary>
-        public float Latitude
+        /// <remarks>
+        /// When Phi = 0 we are looking down on the "north pole" of the object we are orbiting
+        /// When Phi = Pi / 2 we are looking at the equator of the object
+        /// When Phi = Pi we are looking at the "south pole" of the object
+        /// This mimics spherical coordinates a common spherical coordinate system with (radius, theta, phi)
+        /// </remarks>
+        public float Phi
         {
             get
             {
                 float epsilon = 0.0001f;
                 float curr;
 
-                _propertySet.TryGetScalar("Latitude", out curr);
+                _propertySet.TryGetScalar("Phi", out curr);
                 return MathF.Min(MathF.PI - epsilon, MathF.Max(epsilon, curr));
             }
             set
             {
                 float epsilon = 0.0001f;
-                _propertySet.InsertScalar("Latitude", MathF.Min(MathF.PI - epsilon, MathF.Max(epsilon, value)));
+                _propertySet.InsertScalar("Phi", MathF.Min(MathF.PI - epsilon, MathF.Max(epsilon, value)));
             }
         }
+
+        /// <summary>
+        /// The camera's angle of separation from the positive y-axis in degrees
+        /// From 0 to 180
+        /// </summary>
+        /// <remarks>
+        /// When PhiInDegrees = 0 we are looking down on the "north pole" of the object we are orbiting
+        /// When PhiInDegrees = 90 we are looking at the equator of the object
+        /// When PhiInDegrees = 180 we are looking at the "south pole" of the object
+        /// This mimics spherical coordinates a common spherical coordinate system with (radius, theta, phi)
+        /// </remarks>
+        public float PhiInDegrees { get => ConvertRadiansToDegrees(Phi); set => Phi = ConvertDegreesToRadians(value); }
 
         /// <summary>
         /// The angle of separation from the positive z-axis in radians.
         /// Rotates counterclockwise from 0 to 2Pi. 
         /// </summary>
-        public float Longitude
+        /// <remarks>
+        /// When Theta = 0 we are looking at the front of the object we are orbiting
+        /// When Theta = Pi we are looking at the back of the object 
+        /// When Theta = Pi/2 or 3*Pi/2 we are looking at either the object's left or right side 
+        /// </remarks>
+        public float Theta
         {
             get
             {
                 float curr;
-                _propertySet.TryGetScalar("Longitude", out curr);
+                _propertySet.TryGetScalar("Theta", out curr);
                 return curr;
             }
             set
             {
-                _propertySet.InsertScalar("Longitude", value);
+                _propertySet.InsertScalar("Theta", value);
             }
+        }
+
+        /// <summary>
+        /// The angle of separation from the positive z-axis in degrees.
+        /// Rotates counterclockwise from 0 to 360. 
+        /// </summary>
+        /// <remarks>
+        /// When ThetaInDegrees = 0 we are looking at the front of the object we are orbiting
+        /// When ThetaInDegrees = 180 we are looking at the back of the object 
+        /// When ThetaInDegrees = 90 or 270 we are looking at either the object's left or right side 
+        /// </remarks>
+        public float ThetaInDegrees { get => ConvertRadiansToDegrees(Theta); set => Theta = ConvertDegreesToRadians(value); }
+
+        // Helper function that converts radians to degrees
+        private float ConvertRadiansToDegrees(float rads)
+        {
+            return (180 / MathF.PI) * rads;
+        }
+
+        // Helper function that converts radians to degrees
+        private float ConvertDegreesToRadians(float degs)
+        {
+            return (MathF.PI / 180) * degs;
         }
 
         /// <summary>
@@ -137,9 +185,9 @@ namespace CameraComponent
         /// <returns>A Vector3 that represents the camera's extrinsic position in 3D world space.</returns>
         public Vector3 GetAbsolutePosition()
         {
-            float x = MathF.Sin(Latitude) * MathF.Sin(Longitude);
-            float y = -MathF.Cos(Latitude);
-            float z = MathF.Sin(Latitude) * MathF.Cos(Longitude);
+            float x = MathF.Sin(Phi) * MathF.Sin(Theta);
+            float y = -MathF.Cos(Phi);
+            float z = MathF.Sin(Phi) * MathF.Cos(Theta);
 
             return Target + (Radius * new Vector3(x, y, z));
         }
@@ -151,14 +199,14 @@ namespace CameraComponent
         public void SetAbsolutePosition(Vector3 value)
         {
             Radius = Vector3.Distance(Target, value);
-            Longitude = MathF.Atan2(value.X, value.Z);
-            Latitude = MathF.Atan2(value.Z, value.Y);
+            Theta = MathF.Atan2(value.X, value.Z);
+            Phi = MathF.Atan2(value.Z, value.Y);
         }
 
         /// <summary>
         /// Returns the matrix created from the camera's translation and rotation transformations.
         /// </summary>
-        /// <returns>A Matrix4x4 that is created from the camera's target, radius, latitude, and longitude.</returns>
+        /// <returns>A Matrix4x4 that is created from the camera's target, radius, phi, and theta.</returns>
         public Matrix4x4 GetViewMatrix()
         {
             Vector3 position = GetAbsolutePosition();
@@ -167,7 +215,7 @@ namespace CameraComponent
             Matrix4x4 matPos = Matrix4x4.CreateTranslation(-position);
             Matrix4x4 matRoll = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 0, 1), 0);
             Matrix4x4 matPitch = Matrix4x4.CreateFromAxisAngle(new Vector3(1, 0, 0), -MathF.Asin(Vector3.Normalize(Target - position).Y));
-            Matrix4x4 matYaw = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 1, 0), -Longitude);
+            Matrix4x4 matYaw = Matrix4x4.CreateFromAxisAngle(new Vector3(0, 1, 0), -Theta);
 
             return matPos * matYaw * matPitch * matRoll;
         }
@@ -175,33 +223,33 @@ namespace CameraComponent
         /// <summary>
         /// Returns that a matrix created from the camera's view matrix and it's Projection's projection matrix.
         /// </summary>
-        /// <returns>A Matrix4x4 that is the product of matrices created from the Camera's target, radius, latitude, and longitude and its Projection's projection matrix.</returns>
+        /// <returns>A Matrix4x4 that is the product of matrices created from the Camera's target, radius, phi, and theta and its Projection's projection matrix.</returns>
         public Matrix4x4 GetModelViewProjectionMatrix()
         {
             return GetViewMatrix() * Projection.GetProjectionMatrix();
         }
-        
-        // Creates expression animations to drive an FPCamera's position and rotation through the OrbitalCamera's latitude, longitude, and radius
+
+        // Creates expression animations to drive an FPCamera's position and rotation through the OrbitalCamera's phi, theta, and radius
         private void StartAnimationsOnFPCamera()
         {
             CompositionPropertySet fpCamera = _fpCam.GetPropertySet();
 
             // Drives FPCamera's position based on the following formula
-            // FPCamera.Position = Radius*( Sin(Latitude)*Sin(Longitude), -Cos(Latitude), Sin(Latitude)*Cos(Longitude) )
+            // FPCamera.Position = Radius*( Sin(Phi)*Sin(Theta), -Cos(Phi), Sin(Phi)*Cos(Theta) )
             // Sums with Target in the case where Target is not the origin
             var positionExpression = _compositor.CreateExpressionAnimation();
             positionExpression.Expression =
                 "OrbitalCamera.Target + OrbitalCamera.Radius * " +
                 "Vector3(" +
-                "Sin(OrbitalCamera.Latitude) * Sin(OrbitalCamera.Longitude), " +
-                "-Cos(OrbitalCamera.Latitude), " +
-                "Sin(OrbitalCamera.Latitude) * Cos(OrbitalCamera.Longitude))";
+                "Sin(OrbitalCamera.Phi) * Sin(OrbitalCamera.Theta), " +
+                "-Cos(OrbitalCamera.Phi), " +
+                "Sin(OrbitalCamera.Phi) * Cos(OrbitalCamera.Theta))";
             positionExpression.SetExpressionReferenceParameter("OrbitalCamera", _propertySet);
             fpCamera.StartAnimation("Position", positionExpression);
 
-            // Drives FPCamera's yaw by equating it with Longitude
+            // Drives FPCamera's yaw by equating it with Theta
             var yawExpression = _compositor.CreateExpressionAnimation();
-            yawExpression.Expression = "OrbitalCamera.Longitude";
+            yawExpression.Expression = "OrbitalCamera.Theta";
             yawExpression.SetExpressionReferenceParameter("OrbitalCamera", _propertySet);
             fpCamera.StartAnimation("Yaw", yawExpression);
 

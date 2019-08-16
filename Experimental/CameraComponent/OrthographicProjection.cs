@@ -2,13 +2,14 @@
 // The .NET Foundation licenses this file to you under the MIT license.
 // See the LICENSE file in the project root for more information.
 
+using System;
 using System.Numerics;
 using Windows.UI.Composition;
 
 namespace CameraComponent
 {
     /// <summary>
-    /// A class that defines an orthographic projection that defines a distance to the near and far planes and a Width and Height.
+    /// A class that defines an orthographic projection with a distance to the near and far planes and a size.
     /// Implements the Projection and Animatable interfaces.
     /// </summary>
     public sealed class OrthographicProjection : Projection
@@ -18,8 +19,7 @@ namespace CameraComponent
 
         /// <summary>
         /// Creates a OrthographicProjection with default properties.
-        /// Height = 100
-        /// Width = 100
+        /// Size = 100
         /// Near = 1
         /// Far = 1000
         /// </summary>
@@ -36,8 +36,7 @@ namespace CameraComponent
             _propertySet = _compositor.CreatePropertySet();
 
             // Create the properties for the projection
-            _propertySet.InsertScalar("Height", 100f);
-            _propertySet.InsertScalar("Width", 100f);
+            _propertySet.InsertScalar("Size", 100f);
             _propertySet.InsertScalar("Near", 1f);
             _propertySet.InsertScalar("Far", 1000f);
             _propertySet.InsertMatrix4x4("ProjectionMatrix", Matrix4x4.Identity);
@@ -46,37 +45,20 @@ namespace CameraComponent
         }
         
         /// <summary>
-        /// Height of the plane that the image is projected onto
+        /// Size of the square plane that the image is projected onto.
         /// </summary>
-        public float Height
+        public float Size
         {
             get
             {
                 float curr;
-                _propertySet.TryGetScalar("Height", out curr);
+                _propertySet.TryGetScalar("Size", out curr);
                 return curr;
             }
             set
             {
-                _propertySet.InsertScalar("Height", value);
-            }
-        }
-
-
-        /// <summary>
-        /// Width of the plane the image is projected onto.
-        /// </summary>
-        public float Width
-        {
-            get
-            {
-                float curr;
-                _propertySet.TryGetScalar("Width", out curr);
-                return curr;
-            }
-            set
-            {
-                _propertySet.InsertScalar("Width", value);
+                float epsilon = 0.0001f;
+                _propertySet.InsertScalar("Size", MathF.Max(epsilon, value));
             }
         }
 
@@ -93,7 +75,8 @@ namespace CameraComponent
             }
             set
             {
-                _propertySet.InsertScalar("Near", value);
+                float epsilon = 0.0001f;
+                _propertySet.InsertScalar("Near", MathF.Max(epsilon, value));
             }
         }
 
@@ -114,16 +97,15 @@ namespace CameraComponent
             }
         }
 
-        // Returns the matrix created by using the distance to the near and far planes and the projection's height and width
         /// <summary>
-        /// Returns the matrix created from the projection's Near, Far, Width, and Height values.
+        /// Returns the matrix created from the projection's Near, Far, and Size.
         /// </summary>
         /// <returns>A Matrix4x4 that normalizes the scene in the range (-1, -1, -1) to (1, 1, 1).</returns>
         public Matrix4x4 GetProjectionMatrix()
         {
             Matrix4x4 matProj = Matrix4x4.Identity;
-            matProj.M11 = 1 / Width;
-            matProj.M22 = 1 / Height;
+            matProj.M11 = 1 / Size;
+            matProj.M22 = 1 / Size;
             matProj.M33 = 1 / (Far - Near);
 
             return matProj;
@@ -133,8 +115,8 @@ namespace CameraComponent
         {
             var matProj =
                 "Matrix4x4(" +
-                "1 / OrthoProj.Width, 0, 0, 0, " +
-                "0, 1 / OrthoProj.Height, 0, 0, " +
+                "1 / OrthoProj.Size, 0, 0, 0, " +
+                "0, 1 / OrthoProj.Size, 0, 0, " +
                 "0, 0, 1 / (OrthoProj.Far - OrthoProj.Near), 0, " +
                 "0, 0, 0, 1)";
 

@@ -241,10 +241,11 @@ namespace CameraComponent
             positionExpression.Expression =
                 "OrbitalCamera.Target + OrbitalCamera.Radius * " +
                 "Vector3(" +
-                "Sin(OrbitalCamera.Phi) * Sin(OrbitalCamera.Theta), " +
-                "-Cos(OrbitalCamera.Phi), " +
-                "Sin(OrbitalCamera.Phi) * Cos(OrbitalCamera.Theta))";
+                "Sin(Clamp(OrbitalCamera.Phi, epsilon, Pi - epsilon)) * Sin(OrbitalCamera.Theta), " +
+                "-Cos(Clamp(OrbitalCamera.Phi, epsilon, Pi - epsilon)), " +
+                "Sin(Clamp(OrbitalCamera.Phi, epsilon, Pi - epsilon)) * Cos(OrbitalCamera.Theta))";
             positionExpression.SetExpressionReferenceParameter("OrbitalCamera", _propertySet);
+            positionExpression.SetScalarParameter("epsilon", 0.0001f);
             fpCamera.StartAnimation("Position", positionExpression);
 
             // Drives FPCamera's yaw by equating it with Theta

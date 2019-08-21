@@ -115,13 +115,14 @@ namespace CameraComponent
         {
             var matProj =
                 "Matrix4x4(" +
-                "1 / OrthoProj.Size, 0, 0, 0, " +
-                "0, 1 / OrthoProj.Size, 0, 0, " +
+                "1 / Max(epsilon, OrthoProj.Size), 0, 0, 0, " +
+                "0, 1 / Max(epsilon, OrthoProj.Size), 0, 0, " +
                 "0, 0, 1 / (OrthoProj.Far - OrthoProj.Near), 0, " +
                 "0, 0, 0, 1)";
 
             var projExpression = _compositor.CreateExpressionAnimation();
             projExpression.Expression = matProj;
+            projExpression.SetScalarParameter("epsilon", 0.0001f);
             projExpression.SetReferenceParameter("OrthoProj", _propertySet);
 
             _propertySet.StartAnimation("ProjectionMatrix", projExpression);

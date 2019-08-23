@@ -13,16 +13,22 @@ namespace winrt::SceneLoaderComponent::implementation
         SceneLoader() = default;
 
         winrt::Windows::UI::Composition::Scenes::SceneNode Load(winrt::Windows::Storage::Streams::IBuffer buffer, winrt::Windows::UI::Composition::Compositor compositor);
+        winrt::Windows::UI::Composition::Scenes::SceneNode LoadGLB(winrt::Windows::Storage::Streams::IBuffer buffer, winrt::Windows::UI::Composition::Compositor compositor, // TODO: Pass in URI. Convert to path using uri.LocalPath.);
 
     private:
         void ParseGLTF(
-            BYTE * data, 
+            BYTE * data,
+            UINT32 capacity,
+            winrt::Windows::UI::Composition::Compositor& compositor,
+            winrt::Windows::UI::Composition::Scenes::SceneNode& rootNode);
+        void ParseGLB(
+            BYTE * data,
             UINT32 capacity,
             winrt::Windows::UI::Composition::Compositor& compositor,
             winrt::Windows::UI::Composition::Scenes::SceneNode& rootNode);
         void DoIt(
-            Microsoft::glTF::Document & gltfDoc, 
-            std::shared_ptr<Microsoft::glTF::GLTFResourceReader> resourceReader, 
+            Microsoft::glTF::Document & gltfDoc,
+            std::shared_ptr<Microsoft::glTF::GLTFResourceReader> resourceReader,
             winrt::Windows::UI::Composition::Compositor& compositor,
             winrt::Windows::UI::Composition::Scenes::SceneNode& rootNode);
     };

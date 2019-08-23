@@ -9,7 +9,10 @@
 #include "Bounds3D.h"
 #include "GLTFVisitor.h"
 
+#include <filesystem>
+
 using namespace std;
+using namespace std::filesystem;
 using namespace Microsoft::glTF;
 using namespace SceneLoader;
 
@@ -50,10 +53,16 @@ namespace winrt::SceneLoaderComponent::implementation
 
         }
 
-        shared_ptr<istream> GetInputStream(const std::string&) const override
+        shared_ptr<istream> GetInputStream(const std::string& filename) const override
         {
             auto spIfStream = make_shared<std::istream>(const_cast<MemBuf*>(&m_membuf));
+            //if (filename != "") // GLB
+            //// TODO: Determine if changes are required to GetInputStream to read in binary files.
+            //{
+            //    auto streamPath = m_pathBase / u8path(filename);
+            //    auto spIfStream = std::make_shared<std::ifstream>(streamPath, std::ios_base::binary);
 
+            //}
             if (spIfStream->fail())
             {
                 throw exception("failed to open file");
@@ -99,7 +108,61 @@ namespace winrt::SceneLoaderComponent::implementation
         return worldNode;
     }
 
+    SceneNode SceneLoader::LoadGLB(IBuffer buffer, Compositor compositor)
+    {
+        auto memoryBuffer = winrt::Windows::Storage::Streams::Buffer::CreateMemoryBufferOverIBuffer(buffer);
+        auto memoryBufferReference = memoryBuffer.CreateReference();
+        auto data = GetDataPointerFromMemoryBuffer(memoryBufferReference);
+
+        SceneNode worldNode = SceneNode::Create(compositor);
+        SceneNode rootNode = SceneNode::Create(compositor);
+        worldNode.Children().Append(rootNode);
+
+        //
+        // Parses the GLB file and creates the WUC Scenes objects
+        //
+        ParseGLB(data.first, data.second, compositor, rootNode);
+
+        Bounds3D bounds = ComputeTreeBounds(
+            rootNode,
+            float4x4::identity());
+
+        float lengthX = bounds.Max().x - bounds.Min().x;
+        float lengthY = bounds.Max().y - bounds.Min().y;
+        float lengthZ = bounds.Max().z - bounds.Min().z;
+
+        float maxDimension = max(lengthX, max(lengthY, lengthZ));
+
+        if (maxDimension > 0.0f)
+        {
+            float scaleFactor = 300.0f / maxDimension;
+
+            worldNode.Transform().Scale({ scaleFactor, scaleFactor, scaleFactor });
+            worldNode.Transform().Translation({ 0.0f, -(bounds.Min().y + bounds.Max().y) * scaleFactor / 2, 0.0f });
+
+        }
+
+        return worldNode;
+    }
+
     void SceneLoader::ParseGLTF(BYTE* data, UINT32 capacity, Compositor& compositor, SceneNode& rootNode)
+    {
+        auto streamReader = make_shared<StreamReader>(data, capacity);
+        auto spifstream = streamReader->GetInputStream("");
+        auto resourceReader = make_shared<GLTFResourceReader>(streamReader);
+
+        //////////////////////////////////////////////////////////////////////////////
+        //
+        // Document
+        //
+        //////////////////////////////////////////////////////////////////////////////
+        Document gltfDoc = Deserialize(*spifstream);
+        Validation::Validate(gltfDoc);
+
+        DoIt(gltfDoc, resourceReader, compositor, rootNode);
+    }
+
+    void SceneLoader::ParseGLB(BYTE* data, UINT32 capacity, Compositor& compositor, SceneNode& rootNode)
     {
         auto streamReader = make_shared<StreamReader>(data, capacity);
         auto spifstream = streamReader->GetInputStream("");

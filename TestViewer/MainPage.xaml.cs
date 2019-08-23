@@ -53,15 +53,32 @@ namespace TestViewer
             _sceneVisual.StartAnimation("RotationAngleInDegrees", rotationAnimation);
         }
 
-        async Task<SceneNode> LoadGLTF(Uri uri)
+        async Task<SceneNode> LoadGLTF(string fileStr)
         {
+            string[] parts = fileStr.Split('.');
+            string fileExtension = parts[parts.Length - 1];
+
+            Uri uri = new Uri(fileStr);
             var storageFile = await StorageFile.GetFileFromApplicationUriAsync(uri);
             var buffer = await FileIO.ReadBufferAsync(storageFile);
 
             var loader = new SceneLoader();
-            return loader.Load(buffer, _compositor);
+
+            if (fileExtension == "glb")
+            {
+                return loader.Load(buffer, _compositor);
+            }
+            else if (fileExtension == "gltf")
+            {
+                return loader.LoadGLB(buffer, _compositor, uri.LocalPath);
+            }
+            else
+            {
+                Console.WriteLine("Extension: " + fileExtension);
+                return null;
+            }
         }
 
-        async void Page_Loaded(object sender, RoutedEventArgs e) => _sceneVisual.Root = await LoadGLTF(new Uri("ms-appx:///Assets/DamagedHelmet.gltf"));
+        async void Page_Loaded(object sender, RoutedEventArgs e) => _sceneVisual.Root = await LoadGLTF("ms-appx:///Assets/DamagedHelmet.gltf");
     }
 }
